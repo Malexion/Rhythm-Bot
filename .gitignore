@@ -39,3 +39,4 @@ jspm_packages
 # Custom
 dev-run.bat
 app.js
+test.js
