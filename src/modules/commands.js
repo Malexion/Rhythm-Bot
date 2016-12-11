@@ -1,7 +1,7 @@
 
 const __ = require('iterate-js');
 const moment = require('moment');
-const helpText = require('./helptext.js');
+const helpText = require('../helptext.js');
 const songtypes = [
     //'spotify',
     'youtube'

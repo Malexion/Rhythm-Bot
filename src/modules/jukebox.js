@@ -1,7 +1,7 @@
 
 const __ = require('iterate-js');
 const youtube = require('ytdl-core');
-const spotify = require('./services/spotify.js');
+const spotify = require('../services/spotify.js');
 
 const infohandlers = {
 

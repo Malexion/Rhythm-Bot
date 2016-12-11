@@ -7,11 +7,11 @@ module.exports = function(bot) {
 
         cleaning: {},
 
-        bulkDelete: function(msgs, cb) {
+        sequentialDelete: function(msgs, cb) {
             var msg = msgs.shift();
             if(msg) {
                 msg.delete()
-                    .then(() => { bot.manager.bulkDelete(msgs, cb); })
+                    .then(() => { bot.manager.sequentialDelete(msgs, cb); })
                     .catch(error => console.log(error));
             } else if(cb)
                 cb();
@@ -35,7 +35,7 @@ module.exports = function(bot) {
                         });
                         
                         if(msgs.length > 0) {
-                            bot.manager.bulkDelete(msgs, () => {
+                            bot.manager.sequentialDelete(msgs, () => {
                                 bot.manager.cleaning[cfg.name] = false;
                                 bot.manager.cleanChannel(config);
                             });
