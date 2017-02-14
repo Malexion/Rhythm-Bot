@@ -10,6 +10,8 @@ module.exports = [
     '{0}time: "Time of the current song"',
     '{0}enqueue: "Add a song to the end of the queue"',
     '{0}dequeue: "Remove a song from the queue"',
+    '{0}add: "Alias for enqueue"',
+    '{0}remove: "Alias for dequeue"',
     '{0}skip: "Skip the current song"',
     '{0}stop: "Stop and reset the current song"',
     '{0}list: "List all songs in the queue"',

@@ -89,6 +89,10 @@ module.exports = function(bot) {
             }
         },
 
+        add: msg => {
+            bot.commands.enqueue(msg);
+        },
+
         enqueue: msg => {
             var parts = msg.details.split(':'),
                 type = parts.shift().trim(),
@@ -106,8 +110,10 @@ module.exports = function(bot) {
                     var track = { type: type, search: target.trim(), requestor: msg.author.username };
                     bot.queue.enqueue(track);
                     bot.jukebox.info(track, msg, (err, info) => {
-                        track.title = info ? info.title : 'Song';
-                        track.length = moment('00:00:00', 'HH:mm:ss').add(parseInt(info.length_seconds), 's').format('HH:mm:ss');
+                        if(info) {
+                            track.title = info ? info.title : 'Song';
+                            track.length = moment('00:00:00', 'HH:mm:ss').add(parseInt(info.length_seconds), 's').format('HH:mm:ss');
+                        }
                         msg.channel.sendMessage(`:heavy_plus_sign: Enqueued: "${track.title}" @ #${bot.queue.indexOf(track) + 1}`);
                     });
                 });
@@ -115,6 +121,10 @@ module.exports = function(bot) {
                 msg.channel.sendMessage('Invalid Song Format, try: "{0}enqueue spotify:track:3Xn7SFjB5cLAQPKsVIBc2q"  or  "{0}enqueue youtube:https://www.youtube.com/watch?v=dQw4w9WgXcQ"'
                     .format(bot.config.command.symbol));
             }
+        },
+
+        remove: msg => {
+            bot.commands.dequeue(msg);
         },
 
         dequeue: msg => {
@@ -132,7 +142,7 @@ module.exports = function(bot) {
 
         skip: msg => {
             var track = bot.queue.first;
-            if(track && track.dispatcher) {
+            if(track && track.dispatcher && msg && msg.channel) {
                 track.dispatcher.end();
                 msg.channel.sendMessage(`:fast_forward: "${track.title}" skipped`);
             }
@@ -140,7 +150,7 @@ module.exports = function(bot) {
 
         stop: msg => {
             var track = bot.queue.first;
-            if(track && track.dispatcher) {
+            if(track && track.dispatcher && msg && msg.channel) {
                 track.playing = false;
                 track.dispatcher.end();
                 msg.channel.sendMessage(`:stop_button: "${track.title}" stopped`);
