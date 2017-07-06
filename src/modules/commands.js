@@ -89,6 +89,29 @@ module.exports = function(bot) {
             }
         },
 
+        youtube: msg => {
+            var search = msg.details.trim();
+
+            var targets = [];
+            if(search[0] == '(' && search[search.length - 1] == ')') {
+                search = search.replace('(', '').replace(')', '');
+                targets = search.split(',');
+            } else
+                targets.push(search);
+
+            __.all(targets, target => {
+                var track = { type: 'youtube', search: target.trim(), requestor: msg.author.username };
+                bot.queue.enqueue(track);
+                bot.jukebox.info(track, msg, (err, info) => {
+                    if(info) {
+                        track.title = info ? info.title : 'Song';
+                        track.length = moment('00:00:00', 'HH:mm:ss').add(parseInt(info.length_seconds), 's').format('HH:mm:ss');
+                    }
+                    msg.channel.sendMessage(`:heavy_plus_sign: Youtube Enqueued: "${track.title}" @ #${bot.queue.indexOf(track) + 1}`);
+                });
+            });
+        },
+
         add: msg => {
             bot.commands.enqueue(msg);
         },
@@ -118,7 +141,7 @@ module.exports = function(bot) {
                     });
                 });
             } else {
-                msg.channel.sendMessage('Invalid Song Format, try: "{0}enqueue spotify:track:3Xn7SFjB5cLAQPKsVIBc2q"  or  "{0}enqueue youtube:https://www.youtube.com/watch?v=dQw4w9WgXcQ"'
+                msg.channel.sendMessage('Invalid Song Format, try: "{0}enqueue youtube:https://www.youtube.com/watch?v=dQw4w9WgXcQ"'
                     .format(bot.config.command.symbol));
             }
         },
@@ -158,7 +181,7 @@ module.exports = function(bot) {
         },
 
         list: msg => {
-            var list = __.map(bot.queue.list, (track, idx) => `${idx + 1}. Type: "${track.type}" Title: "${track.title}"`);
+            var list = __.map(bot.queue.list, (track, idx) => `${idx + 1}. Type: "${track.type}" Title: "${track.title}${track.requestor ? ` Requested By: ${track.requestor}`:''}"`);
             if(list.length > 0)
                 msg.channel.sendMessage(list.join('\n'));
             else
