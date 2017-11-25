@@ -61,12 +61,14 @@ module.exports = function(bot) {
             if(bot.queue.first.playing)
                 return msg.channel.sendMessage('Already playing a song');
             
+            bot.paused = false;
             bot.jukebox.play(bot.queue.first, msg);
         },
 
         pause: msg => {
             var track = bot.queue.first;
             if(track && track.dispatcher) {
+                bot.queue.first.paused = true;
                 track.dispatcher.pause();
                 msg.channel.sendMessage(`:pause_button: "${track.title}" paused`);
             }
@@ -75,6 +77,7 @@ module.exports = function(bot) {
         resume: msg => {
             var track = bot.queue.first;
             if(track && track.dispatcher) {
+                bot.queue.first.paused = false;
                 track.dispatcher.resume();
                 msg.channel.sendMessage(`:play_pause: "${track.title}" resumed`);
             }
@@ -176,6 +179,7 @@ module.exports = function(bot) {
             if(track && track.dispatcher && msg && msg.channel) {
                 track.playing = false;
                 track.dispatcher.end();
+                bot.paused = false;
                 msg.channel.sendMessage(`:stop_button: "${track.title}" stopped`);
             }
         },

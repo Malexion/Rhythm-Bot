@@ -11,16 +11,18 @@ module.exports = function(bot) {
         return msg;
     };
 
+    var hasCommand = (content) => content.substring(0, bot.config.command.symbol.length) == bot.config.command.symbol;
+
     __.all({
         message: msg => {
-            if(bot.config.discord.log && msg.author.id != bot.client.user.id && msg.content[0] == bot.config.command.symbol)
+            if(bot.config.discord.log && msg.author.id != bot.client.user.id && hasCommand(msg.content))
                 console.log('{0}{1}{2} : {3}'.format(
                     msg.guild ? '{0} '.format(msg.guild.name) : '', 
                     msg.channel.name ? '#{0} @ '.format(msg.channel.name) : 'PM @ ', 
                     msg.author.username, 
                     msg.content
                 ));
-            if(msg.content && msg.content[0] == bot.config.command.symbol) {
+            if(msg.content && hasCommand(msg.content)) {
                 try {
                     var data = parseMsg(msg),
                         cmd = bot.commands[data.cmd];
@@ -38,6 +40,7 @@ module.exports = function(bot) {
         },
 
         ready: () => {
+            bot.clock.start();
             if(bot.online)
                 console.log('Reconnected.');
             else
@@ -51,6 +54,8 @@ module.exports = function(bot) {
         },
 
         disconnect: () => {
+            bot.clock.stop();
+            bot.online = false;
             console.log('Disconnected.');
         },
 
@@ -59,7 +64,7 @@ module.exports = function(bot) {
         },
 
         guildMemberUpdate: (old, member) => {
-            if(member.user.username == bot.client.user.username && member.mute && !old.mute) {
+            if(member.user.username == bot.client.user.username && member.mute) {
                 member.setMute(false);
                 console.log('Bot muted....unmuteing');
             }
