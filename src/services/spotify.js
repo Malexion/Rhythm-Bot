@@ -4,6 +4,7 @@ const agent = require('superagent');
 const jsonbinder = require('superagent-jsonapify');
 const through = require('through2');
 const SpotifyWebApi = require('spotify-web-api-node');
+const logger = require('../logger.js');
 
 jsonbinder(agent);
 const trackurl = 'https://api.spotify.com/v1/tracks/{0}';
@@ -51,7 +52,7 @@ spotify.init = function(bot, cb) {
             spotifyApi.setAccessToken(data.body['access_token']);
             cb(spotifyApi);
         }, (err) => {
-            console.log('Something went wrong when retrieving an access token', err);
+            logger.error('Something went wrong when retrieving an access token', err);
         });
 };
 

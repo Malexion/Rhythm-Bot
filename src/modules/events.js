@@ -1,4 +1,5 @@
 const __ = require('iterate-js');
+const logger = require('../logger.js');
 
 module.exports = function(bot) {
     bot.speakers = [];
@@ -16,7 +17,7 @@ module.exports = function(bot) {
     __.all({
         message: msg => {
             if(bot.config.discord.log && msg.author.id != bot.client.user.id && hasCommand(msg.content))
-                console.log('{0}{1}{2} : {3}'.format(
+                logger.log('{0}{1}{2} : {3}'.format(
                     msg.guild ? '{0} '.format(msg.guild.name) : '', 
                     msg.channel.name ? '#{0} @ '.format(msg.channel.name) : 'PM @ ', 
                     msg.author.username, 
@@ -29,44 +30,44 @@ module.exports = function(bot) {
                     if(__.is.function(cmd))
                         cmd(data);
                 } catch(e) {
-                    console.log(e);
+                    logger.error(e);
                 }
             }
             try {
                 bot.manager.clean();
             } catch(e) {
-                console.log(e);
+                logger.error(e);
             }
         },
 
         ready: () => {
             bot.clock.start();
             if(bot.online)
-                console.log('Reconnected.');
+                logger.log('Reconnected.');
             else
-                console.log('Rhythm Bot Online.');
+                logger.log('Rhythm Bot Online.');
             bot.online = true;
             bot.manager.clean();
         },
 
         reconnecting: () => {
-            console.log('Reconnecting...');
+            logger.log('Reconnecting...');
         },
 
         disconnect: () => {
             bot.clock.stop();
             bot.online = false;
-            console.log('Disconnected.');
+            logger.log('Disconnected.');
         },
 
         error: error => {
-            console.log(error);
+            logger.error(error);
         },
 
         guildMemberUpdate: (old, member) => {
             if(member.user.username == bot.client.user.username && member.mute) {
                 member.setMute(false);
-                console.log('Bot muted....unmuteing');
+                logger.log('Bot muted....unmuteing');
             }
         },
 

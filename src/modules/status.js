@@ -1,6 +1,7 @@
 
 const __ = require('iterate-js');
 const moment = require('moment');
+const logger = require('../logger.js');
 
 module.exports = function(bot) {
     var STATE = __.enum({
@@ -45,7 +46,7 @@ module.exports = function(bot) {
                 });
 
                 if(__.prop(bot.client, 'user.presence.game.name') != text) {
-                    console.log(`Status: ${text}`);
+                    logger.log(`Status: ${text}`);
                     bot.client.user.setGame(text);
                 }
             }

@@ -1,6 +1,7 @@
 
 const __ = require('iterate-js');
 const moment = require('moment');
+const logger = require('../logger.js');
 
 module.exports = function(bot) {
     bot.manager = {
@@ -12,7 +13,7 @@ module.exports = function(bot) {
             if(msg) {
                 msg.delete()
                     .then(() => { bot.manager.sequentialDelete(msgs, cb); })
-                    .catch(error => console.log(error));
+                    .catch(error => logger.error(error));
             } else if(cb)
                 cb();
         },

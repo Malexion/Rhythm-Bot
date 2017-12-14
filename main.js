@@ -1,5 +1,6 @@
 
 const RhythmBot = require('./src/rhythm-bot.js');
+const logger = require('./src/logger.js');
 
 const bot = new RhythmBot({
     command: {
@@ -16,4 +17,11 @@ const bot = new RhythmBot({
     }
 });
 
-bot.connect().then(() => { bot.listen(); });
+bot.connect()
+    .then(() => { 
+        logger.log('Listening');
+        bot.listen();
+    })
+    .catch(err => {
+        logger.error(err);
+    });
