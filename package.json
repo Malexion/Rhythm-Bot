@@ -1,24 +1,28 @@
 {
   "name": "rhythm-bot",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "",
-  "main": "main.js",
+  "main": "dist/app.js",
   "scripts": {
-    "test": "node app",
-    "start": "node main"
+    "start": "tsc && node dist/app",
+    "build": "tsc"
   },
   "author": "Malexion",
   "license": "ISC",
   "dependencies": {
-    "discord.js": "^10.0.1",
-    "iterate-js": "^1.0.29",
+    "@types/jsonfile": "^5.0.0",
+    "@types/minimist": "^1.2.0",
+    "@types/moment": "^2.13.0",
+    "@types/node": "^12.0.7",
+    "@types/winston": "^2.4.4",
+    "discord-command-parser": "^1.2.1",
+    "discord.js": "^11.5.1",
     "jsonfile": "^2.4.0",
-    "moment": "^2.19.4",
-    "node-opus": "^0.3.0",
-    "spotify-web-api-node": "^2.3.6",
-    "superagent": "^3.8.2",
-    "superagent-jsonapify": "^1.4.2",
-    "through2": "^2.0.3",
+    "minimist": "^1.2.0",
+    "moment": "^2.24.0",
+    "node-opus": "^0.3.2",
+    "typescript": "^3.5.1",
+    "winston": "^3.2.1",
     "ytdl-core": "^0.20.4"
   }
 }

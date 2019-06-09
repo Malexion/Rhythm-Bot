@@ -1,11 +1,19 @@
-# Rhythm-Bot
+# Rhythm-Bot 2.0 Typescript Update
+- All converted to typescript for ease of collaboration, make sure to globally install typescript as listed in the installation below
+
+Note: This is not the bot listed here [https://rythmbot.co/](https://rythmbot.co/)
+
+## Description
+
+Simple little music bot to queue up and play youtube audio over discord voice channels.
 
 ## Unlisted dependencies
 
 - `Python2.7` This version is required for node-gyp I think?
 - `FFMPEG` command line tool
 - `node-gyp` command line tool
-- `node.js` version 6.X.X or higher
+- `node.js` version 10.X.X or higher is recommended
+- `typescript` types for javascript, enables easier group collaboration and simple right click to look up definitions
 
 ## Installation
 
@@ -14,20 +22,17 @@
     - Run `npm config set python python2.7`
     - Install FFMPEG from the website and add it to your system path. EX: `C:\ffmpeg\bin`
     - Run `npm install node-gyp -g`
+    - Run `npm install typescript -g`
     - Run `npm install`
 
-## Description
+## Configuration
 
-Simple little music bot to queue up and play youtube vids over discord voice channels, spotify bits are put on hold since spotify changed their api awhile back and I can't get at the music files easily.
+- Get a token string for your bot from by registering your bot here: [https://discordapp.com/developers](https://discordapp.com/developers)
+    - You should be able to find options to invite your bot to a channel here as well
+- Open `bot-config.json` and replace the content between the quotes ```"<BOT-TOKEN-HERE>"``` with your bot token.
+    - In config you can add other settings, to see an example of the settings open `./src/bot/config.ts` and look at `DefaultBotConfig` and `BotConfig` for eamples
+- Open `bot.log` if your looking to debug errors
 
-## Usage
+## Running the Application
 
-To get started open up ```main.js``` and add your bot token between the tick marks ```'...'``` where it says ```'<BOT-TOKEN-HERE>'```, which you can currently aquire from registering an app at [https://discordapp.com/developers](https://discordapp.com/developers)
-
-Run ```main.js``` with start.bat or running ```node main``` in command line after you have configured and added your token for the bot to use.
-
-There is a built in configurable channel manager to keep the post count of text channels low since this bot tends to say a lot. By default it'll watch all channels for it's commands and respond in that channel which includes pms.
-
-You can modify other config settings by adding the property and sub properties you want to modify to the object passed into ```RhythmBot({...})``` in ```main.js```. The channel manager is left commented out in the config file as an example.
-
-If your having errors, try looking into the ```rhythm-bot-log.log``` file to find the source of the cause.
+- Run `npm start`
