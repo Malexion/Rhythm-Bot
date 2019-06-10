@@ -1,29 +1,48 @@
 
 import * as path from 'path';
 import * as fs from 'fs';
+import { readFileSync, writeFileSync } from 'jsonfile';
 
 export const directory = path.resolve(__dirname, '..');
 
+export const projectDir = (...args: string[]) => {
+    return path.resolve(directory, ...args);
+};
+
+export const readJson = (...args: string[]) => {
+    return readFileSync(projectDir(...args), { encoding: 'utf8' });
+};
+
 export const requireFile = (...args: string[]) => {
-    return require(path.resolve(directory, ...args));
+    return require(projectDir(...args));
 };
 
 export const readFile = (...args: string[]) => {
-    return fs.readFileSync(path.resolve(directory, ...args), { encoding: 'utf8' }); 
+    return fs.readFileSync(projectDir(...args), { encoding: 'utf8' }); 
 };
 
 export const readDir = (...args: string[]) => {
-    return fs.readdirSync(path.resolve(directory, ...args)); 
+    return fs.readdirSync(projectDir(...args)); 
 };
 
 export const writeFile = (data: any, ...args: string[]) => {
-    return fs.writeFileSync(path.resolve(directory, ...args), data, { encoding: 'utf8' }); 
+    return fs.writeFileSync(projectDir(...args), data, { encoding: 'utf8' }); 
+};
+
+export const writeJson = (data: any, ...args: string[]) => {
+    return writeFileSync(projectDir(...args), data, { encoding: 'utf8' });
 };
 
 export const appendFile = (data: any, ...args: string[]) => {
-    return fs.appendFileSync(path.resolve(directory, ...args), data, { encoding: 'utf8' });
+    return fs.appendFileSync(projectDir(...args), data, { encoding: 'utf8' });
+};
+
+export const fileExists = (...args: string[]) => {
+    return fs.existsSync(projectDir(...args));
 };
 
 export const deleteFile = (...args: string[]) => {
-    return fs.unlinkSync(path.resolve(directory, ...args));
+    let filepath = projectDir(...args);
+    if(!fs.existsSync(filepath)) return;
+    return fs.unlinkSync(filepath);
 };

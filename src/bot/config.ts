@@ -45,7 +45,7 @@ export const DefaultBotConfig: BotConfig = {
     },
     stream: {
         seek: 0,
-        passes: 2, 
+        passes: 1, 
         volume: 1,
         bitrate: 48000
     }

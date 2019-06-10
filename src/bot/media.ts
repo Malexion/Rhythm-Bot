@@ -145,7 +145,7 @@ export class MediaPlayer {
                 if(!this.playing) {
                     type.getStream(item)
                         .then(stream => {
-                            let config = this.config
+                            let config = this.config;
                             this.dispatcher = this.connection.playStream(stream, {
                                 seek: config.stream.seek,
                                 volume: config.stream.volume,
