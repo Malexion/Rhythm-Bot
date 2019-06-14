@@ -21,7 +21,7 @@ export interface BotConfig {
         seek?: number;
         passes?: number;
         volume?: number;
-        bitrate?: number;
+        bitrate?: number | 'auto';
     }
 }
 
@@ -45,8 +45,8 @@ export const DefaultBotConfig: BotConfig = {
     },
     stream: {
         seek: 0,
-        passes: 1, 
+        passes: 3, 
         volume: 1,
-        bitrate: 48000
+        bitrate: 'auto'
     }
 };

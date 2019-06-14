@@ -3,6 +3,7 @@ import { VoiceConnection, StreamDispatcher, TextChannel, DMChannel, GroupDMChann
 import { Readable } from 'stream';
 import { BotConfig } from './config';
 import { BotStatus } from './bot-status';
+import { logger } from './logger';
 
 export interface MediaItem {
     type: string;
@@ -133,6 +134,52 @@ export class MediaPlayer {
             this.channel.send(`:cd: Playlist Cleared`);
     }
 
+    dispatchStream(stream: Readable, item: MediaItem) {
+        if(this.dispatcher) {
+            this.dispatcher.end();
+            this.dispatcher = null;
+        }
+        this.dispatcher = this.connection.playOpusStream(stream, {
+            seek: this.config.stream.seek,
+            volume: this.config.stream.volume,
+            passes: this.config.stream.passes,
+            bitrate: this.config.stream.bitrate
+        });
+        this.dispatcher.on('start', () => {
+            this.playing = true;
+            this.determineStatus();
+            if(this.channel)
+                this.channel.send(`:musical_note: Now playing: "${item.name}", Requested by: ${item.requestor}`);
+        });
+        this.dispatcher.on('debug', (info: string) => {
+            console.log(info);
+            logger.debug(info);
+        });
+        this.dispatcher.on('error', err => {
+            this.skip();
+            console.log(err);
+            logger.error(err);
+            if(this.channel)
+                this.channel.send(`Error Playing Song: ${err}`);
+        });
+        this.dispatcher.on('end', (reason: string) => {
+            console.log(`Stream Ended: ${reason}`);
+            logger.debug(`Stream Ended: ${reason}`);
+            if(this.playing) {
+                this.playing = false;
+                this.dispatcher = null;
+                this.determineStatus();
+                if(!this.stopping) {
+                    let track = this.queue.dequeue();
+                    if(this.config.queue.repeat)
+                        this.queue.enqueue(track);
+                        this.play();
+                }
+            }
+            this.stopping = false;
+        });
+    }
+
     play() {
         if(this.queue.length == 0 && this.channel)
             this.channel.send(`Queue is empty! Add some songs!`);
@@ -145,38 +192,7 @@ export class MediaPlayer {
                 if(!this.playing) {
                     type.getStream(item)
                         .then(stream => {
-                            let config = this.config;
-                            this.dispatcher = this.connection.playStream(stream, {
-                                seek: config.stream.seek,
-                                volume: config.stream.volume,
-                                passes: config.stream.passes,
-                                bitrate: config.stream.bitrate
-                            });
-                            this.dispatcher.on('start', () => {
-                                this.playing = true;
-                                this.determineStatus();
-                                if(this.channel)
-                                    this.channel.send(`:musical_note: Now playing: "${item.name}", Requested by: ${item.requestor}`);
-                            });
-                            this.dispatcher.on('error', err => {
-                                this.skip();
-                                if(this.channel)
-                                    this.channel.send(`Error Playing Song: ${err}`);
-                            });
-                            this.dispatcher.on('end', () => {
-                                if(this.playing) {
-                                    this.playing = false;
-                                    this.dispatcher = null;
-                                    this.determineStatus();
-                                    if(!this.stopping) {
-                                        let track = this.queue.dequeue();
-                                        if(config.queue.repeat)
-                                            this.queue.enqueue(track);
-                                            this.play();
-                                    }
-                                }
-                                this.stopping = false;
-                            });
+                            this.dispatchStream(stream, item);
                         });
                 } else if(this.paused && this.dispatcher) {
                     this.dispatcher.resume();

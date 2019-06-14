@@ -17,6 +17,7 @@
     "@types/winston": "^2.4.4",
     "discord-command-parser": "^1.2.1",
     "discord.js": "^11.5.1",
+    "ffmpeg-binaries": "^4.0.0",
     "jsonfile": "^2.4.0",
     "minimist": "^1.2.0",
     "moment": "^2.24.0",
