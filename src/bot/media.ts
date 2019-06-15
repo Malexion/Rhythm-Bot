@@ -139,7 +139,7 @@ export class MediaPlayer {
             this.dispatcher.end();
             this.dispatcher = null;
         }
-        this.dispatcher = this.connection.playOpusStream(stream, {
+        this.dispatcher = this.connection.playStream(stream, {
             seek: this.config.stream.seek,
             volume: this.config.stream.volume,
             passes: this.config.stream.passes,
