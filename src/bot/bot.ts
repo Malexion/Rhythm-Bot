@@ -108,7 +108,7 @@ export class Bot implements IBot {
             .on('remove', (cmd: ParsedMessage, msg: Message) => {
                 if(cmd.arguments.length > 0) {
                     let idx = parseInt(cmd.arguments[0]);
-                    let item = this.player.at(idx);
+                    let item = this.player.at(idx - 1);
                     if(item) {
                         this.player.remove(item);
                     }
@@ -162,9 +162,6 @@ export class Bot implements IBot {
             .on('repeat', (cmd: ParsedMessage, msg: Message) => {
                 this.config.queue.repeat = !this.config.queue.repeat;
                 msg.channel.send(`Repeat mode is ${this.config.queue.repeat ? 'on':'off'}`);
-            })
-            .on('playlist', (cmd: ParsedMessage, msg: Message) => {
-                // TODO
             });
 
         this.client = new Client()
