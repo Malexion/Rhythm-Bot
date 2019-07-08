@@ -6,7 +6,7 @@ import { BotConfig, DefaultBotConfig } from './config';
 import { CommandMap } from './command-map';
 import { ConsoleReader } from './console-reader';
 import { MediaPlayer } from './media';
-import { joinUserChannel } from './helpers';
+import { joinUserChannel, secondsToTimestamp } from './helpers';
 import { logger } from './logger';
 import { fuse, clone } from '../iteration/index';
 
@@ -87,11 +87,12 @@ export class Bot implements IBot {
                 this.player.pause();
             })
             .on('time', (cmd: ParsedMessage, msg: Message) => {
+                let media = this.player.queue.first;
                 if(this.player.playing && this.player.dispatcher) {
-                    let elapsed = moment('00:00:00', 'HH:mm:ss')
-                        .add(this.player.dispatcher.totalStreamTime, 's')
-                        .format('HH:mm:ss');
-                    msg.channel.send(`${elapsed} / ${this.player.queue.first.duration}`);
+                    let elapsed = secondsToTimestamp(this.player.dispatcher.totalStreamTime / 1000);
+                    msg.channel.send(`${elapsed} / ${media.duration}`);
+                } else if(this.player.queue.first) {
+                    msg.channel.send(`00:00:00 / ${media.duration}`);
                 }
             })
             .on('add', (cmd: ParsedMessage, msg: Message) => {

@@ -4,6 +4,7 @@ import { ParsedMessage } from 'discord-command-parser';
 import { Message } from 'discord.js';
 import * as moment from 'moment';
 import * as ytdl from 'ytdl-core';
+import { secondsToTimestamp } from '../bot';
 
 const youtubeType: string = 'youtube';
 
@@ -29,9 +30,7 @@ export default class YoutubePlugin implements IBotPlugin {
                     let result = ytdl.getInfo(item.url, (err, info) => {
                         if(info) {
                             item.name = info.title ? info.title : 'Unknown';
-                            item.duration = moment('00:00:00', 'HH:mm:ss')
-                                .add(parseInt(info.length_seconds), 's')
-                                .format('HH:mm:ss');
+                            item.duration = secondsToTimestamp(parseInt(info.length_seconds) || 0);
                             done(item);
                         } else
                             error(err);
