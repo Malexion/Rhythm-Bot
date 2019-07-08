@@ -1,10 +1,11 @@
 
-import * as ytdl from 'ytdl-core';
-import { IBotPlugin, IBot } from '../bot/bot-interface';
-import { MediaItem } from '../bot/media';
+import { MediaItem, IBot, IBotPlugin } from '../resources';
 import { ParsedMessage } from 'discord-command-parser';
 import { Message } from 'discord.js';
 import * as moment from 'moment';
+import * as ytdl from 'ytdl-core';
+
+const youtubeType: string = 'youtube';
 
 export default class YoutubePlugin implements IBotPlugin {
 
@@ -12,16 +13,16 @@ export default class YoutubePlugin implements IBotPlugin {
         bot.helptext += '\n`youtube [url/idfragment]` - Add youtube audio to the queue\n'
         const player = bot.player;
 
-        bot.commands.on('youtube', (cmd: ParsedMessage, msg: Message) => {
+        bot.commands.on(youtubeType, (cmd: ParsedMessage, msg: Message) => {
             if(cmd.arguments.length > 0) {
                 cmd.arguments.forEach(arg => {
-                    player.addMedia({ type: 'youtube', url: arg, requestor: msg.author.username });
+                    player.addMedia({ type: youtubeType, url: arg, requestor: msg.author.username });
                 });
             }
         });
 
         player.typeRegistry.set(
-            'youtube',
+            youtubeType,
             {
                 getDetails: (item: MediaItem) => new Promise((done, error) => {
                     item.url = item.url.includes('://') ? item.url : `https://www.youtube.com/watch?v=${item.url}`;

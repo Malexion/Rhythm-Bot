@@ -1,8 +1,5 @@
 
-import { requireFile } from './directory';
-import { BotConfig } from './bot/config';
-import { Bot } from './bot/bot';
-import { logger } from './bot/logger';
+import { requireFile, logger, BotConfig, Bot } from './resources';
 
 let config: BotConfig = requireFile('./bot-config.json');
 

@@ -1,8 +1,6 @@
+import { MediaItem, IBot, IBotPlugin, readDir, readJson, writeJson, deleteFile, fileExists } from '../resources';
 import { ParsedMessage } from 'discord-command-parser';
 import { Message } from 'discord.js';
-import { readDir, readJson, writeJson, deleteFile, fileExists } from '../directory';
-import { IBotPlugin, IBot } from '../bot/bot-interface';
-import { MediaItem } from '../bot/media';
 
 const playlistDir = './playlists';
 
