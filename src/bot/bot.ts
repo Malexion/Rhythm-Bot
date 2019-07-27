@@ -1,18 +1,18 @@
 
-import { requireFile, readFile, readDir } from '../directory';
+import { parse, ParsedMessage } from 'discord-command-parser';
+import { Client, Message } from 'discord.js';
+import { ParsedArgs } from 'minimist';
+import { Interface } from 'readline';
+import { readDir, readFile, requireFile } from '../directory';
+import { clone, fuse } from '../iteration/index';
 import { IBot, IBotPlugin } from './bot-interface';
 import { BotStatus } from './bot-status';
-import { BotConfig, DefaultBotConfig } from './config';
 import { CommandMap } from './command-map';
+import { BotConfig, DefaultBotConfig } from './config';
 import { ConsoleReader } from './console-reader';
-import { MediaPlayer } from './media';
 import { joinUserChannel, secondsToTimestamp } from './helpers';
 import { logger } from './logger';
-import { fuse, clone } from '../iteration/index';
-
-import { Message, Client } from 'discord.js';
-import { parse, ParsedMessage } from 'discord-command-parser';
-import * as moment from 'moment';
+import { MediaPlayer } from './media';
 
 const helptext = readFile('./helptext.txt');
 const random = (array) => {
@@ -206,9 +206,10 @@ export class Bot implements IBot {
         
         this.console = new ConsoleReader();
         this.console.commands
-            .on('exit', () => {
+            .on('exit', (args: ParsedArgs, rl: Interface) => {
                 if(this.client)
                     this.client.destroy();
+                rl.close();
             });
         
         this.status = new BotStatus(this.client);

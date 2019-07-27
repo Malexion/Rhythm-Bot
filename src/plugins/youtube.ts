@@ -1,10 +1,9 @@
 
-import { MediaItem, IBot, IBotPlugin } from '../resources';
 import { ParsedMessage } from 'discord-command-parser';
 import { Message } from 'discord.js';
-import * as moment from 'moment';
 import * as ytdl from 'ytdl-core';
 import { secondsToTimestamp } from '../bot';
+import { IBot, IBotPlugin, MediaItem } from '../resources';
 
 const youtubeType: string = 'youtube';
 
