@@ -23,6 +23,6 @@
     "node-opus": "^0.3.2",
     "typescript": "^3.5.1",
     "winston": "^3.2.1",
-    "ytdl-core": "^0.29.2"
+    "ytdl-core": "^0.29.4"
   }
 }
