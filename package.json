@@ -18,7 +18,7 @@
     "discord-command-parser": "^1.2.1",
     "discord.js": "^11.5.1",
     "jsonfile": "^2.4.0",
-    "minimist": "^1.2.0",
+    "minimist": "^1.2.3",
     "moment": "^2.24.0",
     "node-opus": "^0.3.2",
     "typescript": "^3.5.1",
