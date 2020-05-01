@@ -1,4 +1,5 @@
 import { Client, PresenceStatus } from "discord.js";
+import { stat } from "fs";
 
 export class BotStatus {
     client: Client;
@@ -9,14 +10,18 @@ export class BotStatus {
 
     setBanner(status: string) {
         this.client.user.setPresence({
-            game: {
+
+
+          
+          status:"online"//recheck
+          /* game: {
                 name: status
-            }
+            }*/
         });
     }
 
     setActivity(activity: PresenceStatus) {
-        this.client.user.setStatus(activity)
+        this.client.user.setStatus("online");//activity
     }
     
 }

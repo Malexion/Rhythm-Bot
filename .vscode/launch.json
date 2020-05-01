@@ -2,9 +2,10 @@
     // Use IntelliSense to learn about possible Node.js debug attributes.
     // Hover to view descriptions of existing attributes.
     // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
-    "version": "0.2.0",
+    "version": "0.2.1",
     "configurations": [
         {
+          
           "type": "node",
           "request": "launch",
           "name": "Bot Dev",
@@ -12,6 +13,9 @@
           "program": "${workspaceFolder}/src/app.ts",
           "sourceMaps": true,
           "smartStep": true,
+          "runtimeVersion": "6.14.4",
+          "outputCapture": "std",
+          "console": "integratedTerminal",
           "cwd": "${workspaceFolder}",
           "outFiles": [
             "${workspaceFolder}/dist/**/*.js"

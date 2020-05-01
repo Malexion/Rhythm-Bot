@@ -1,10 +1,12 @@
-
 import { Message, VoiceConnection } from 'discord.js';
-import * as moment from 'moment';
+ import  *  as moment from 'dayjs';
+
+
+
 
 export function joinUserChannel(msg: Message): Promise<VoiceConnection> {
     return new Promise((done, error) => {
-        let channel = msg.member.voiceChannel;
+       let channel = msg.member.voice.channel
         if(channel && channel.type === 'voice') {
             channel.join()
                 .then(connection => {
@@ -18,6 +20,6 @@ export function joinUserChannel(msg: Message): Promise<VoiceConnection> {
 export function secondsToTimestamp(seconds: number): string {
     return moment()
         .startOf('day')
-        .seconds(seconds)
+        .second(seconds)
         .format('HH:mm:ss');
 }

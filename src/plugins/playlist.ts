@@ -32,7 +32,7 @@ export default class PlaylistPlugin implements IBotPlugin {
             .filter(file => file.includes('.json'))
             .map((file, i) => `${i + 1}. ${file.replace('.json', '')}`);
 
-        msg.channel.send(`Playlists: \n\n${files.length == 0 ? 'No Playlists' : files.join('\n')}`);
+            msg.channel.client.user.send(`Playlists: \n\n${files.length == 0 ? 'No Playlists' : files.join('\n')}`);
     }
 
     load(cmd: ParsedMessage, msg: Message, bot: IBot) {
@@ -47,7 +47,7 @@ export default class PlaylistPlugin implements IBotPlugin {
                     bot.player.queue.push(...queue.list);
                 }
                 bot.player.determineStatus();
-                msg.channel.send(`Loaded Playlist "${name}"`);
+                msg.channel.client.user.send(`Loaded Playlist "${name}"`);
             }
         }
     }
@@ -59,7 +59,7 @@ export default class PlaylistPlugin implements IBotPlugin {
             if(queue.list.length > 0) {
                 writeJson(queue, playlistDir, `${name}.json`);
             }
-            msg.channel.send(`Saved Playlist "${name}"`);
+            msg.channel.client.user.send(`Saved Playlist "${name}"`);
         }
     }
 
@@ -67,7 +67,7 @@ export default class PlaylistPlugin implements IBotPlugin {
         let name = cmd.arguments[1];
         if(name && fileExists(playlistDir, `${name}.json`)) {
             deleteFile(playlistDir, `${name}.json`);
-            msg.channel.send(`Deleted Playlist "${name}"`);
+            msg.channel.client.user.send(`Deleted Playlist "${name}"`);
         }
     }
 

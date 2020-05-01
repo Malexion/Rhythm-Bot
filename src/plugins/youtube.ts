@@ -29,6 +29,7 @@ export default class YoutubePlugin implements IBotPlugin {
                     let result = ytdl.getInfo(item.url, (err, info) => {
                         if(info) {
                             item.name = info.title ? info.title : 'Unknown';
+                            console.log("secunde din melodie: "+info.length_seconds);
                             item.duration = secondsToTimestamp(parseInt(info.length_seconds) || 0);
                             done(item);
                         } else

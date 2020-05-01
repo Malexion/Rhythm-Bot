@@ -1,6 +1,6 @@
 
 import { parse, ParsedMessage } from 'discord-command-parser';
-import { Client, Message } from 'discord.js';
+import { Client, Message, Channel, TextChannel} from 'discord.js';
 import { ParsedArgs } from 'minimist';
 import { Interface } from 'readline';
 import { readDir, readFile, requireFile } from '../directory';
@@ -41,31 +41,39 @@ export class Bot implements IBot {
         this.commands = new CommandMap()
             .on('ping', (cmd: ParsedMessage, msg: Message) => {
                 let phrases = pingPhrases.slice();
-                if(msg.guild)
-                    phrases = phrases.concat(msg.guild.emojis.array().map(x => x.name));
-                msg.channel.send(random(phrases));
+                if(msg.guild){
+                 //  phrases = phrases.concat(msg.guild.emojis.array().map(x => x.name));
+               
+                   for (let index = 0; index < msg.toString.length; index++) {
+                       phrases.concat(msg.toString[index].name);
+                       
+                   }
+                   
+                }
             })
             .on('help', (cmd: ParsedMessage, msg: Message) => {
-                msg.channel.send(this.helptext);
+               //msg.channel.id =  id-ul canalulul text
+            (msg.channel as TextChannel).send(this.helptext)
+
             })
             .on('join', (cmd: ParsedMessage, msg: Message) => {
                 joinUserChannel(msg)
                     .then(connection => {
                         this.player.connection = connection;
-                        msg.channel.send(`:speaking_head: Joined channel: ${connection.channel.name}`);
+                        (msg.channel as TextChannel).send(`:speaking_head: Joined channel: ${connection.channel.name}`);
                         if(this.config.auto.play)
                             this.player.play();
                     })
                     .catch(err => {
-                        msg.channel.send(err);
+                        (msg.channel as TextChannel).send(err);
                     });
             })
             .on('leave', (cmd: ParsedMessage, msg: Message) => {
                 this.player.stop();
                 this.player.connection = null;
-                this.client.voiceConnections.forEach(conn => {
+                this.client.voice.connections.forEach(conn => {///this.client.voiceconnection
                     conn.disconnect();
-                    msg.channel.send(`:mute: Disconnecting from channel: ${conn.channel.name}`);
+                    (msg.channel as TextChannel).send(`:mute: Disconnecting from channel: ${conn.channel.name}`);
                 });
             })
             .on('play', (cmd: ParsedMessage, msg: Message) => {
@@ -74,12 +82,14 @@ export class Bot implements IBot {
                         joinUserChannel(msg)
                             .then(conn => {
                                 this.player.connection = conn;
-                                msg.channel.send(`:speaking_head: Joined channel: ${conn.channel.name}`);
+                                (msg.channel as TextChannel).send(`:speaking_head: Joined channel: ${conn.channel.name}`);
                                 done();
                             });
                     } else
                         done();
                 }).then(() => {
+                    console.log('play song......');
+                   
                     this.player.play();
                 });
             })
@@ -90,19 +100,20 @@ export class Bot implements IBot {
                 let media = this.player.queue.first;
                 if(this.player.playing && this.player.dispatcher) {
                     let elapsed = secondsToTimestamp(this.player.dispatcher.totalStreamTime / 1000);
-                    msg.channel.send(`${elapsed} / ${media.duration}`);
+                    (msg.channel as TextChannel).send(`${elapsed} / ${media.duration}`);
                 } else if(this.player.queue.first) {
-                    msg.channel.send(`00:00:00 / ${media.duration}`);
+                    (msg.channel as TextChannel).send(`00:00:00 / ${media.duration}`);
                 }
             })
             .on('add', (cmd: ParsedMessage, msg: Message) => {
                 if(cmd.arguments.length > 0) {
                     cmd.arguments.forEach(arg => {
                         let parts = arg.split(':');
+                        console.log("parti: "+parts[0]+" | "+parts[1]);
                         if(parts.length == 2) {
                             this.player.addMedia({ type: parts[0], url: parts[1], requestor: msg.author.username });
                         } else
-                            msg.channel.send(`Invalid type format`);
+                        (msg.channel as TextChannel).send(`Invalid type format`);
                     });
                 }
             })
@@ -125,9 +136,9 @@ export class Bot implements IBot {
                 let items = this.player.queue
                     .map((item, idx) => `${idx + 1}. Type: "${item.type}", Title: "${item.name}${item.requestor ? `", Requested By: ${item.requestor}`:''}"`);
                 if(items.length > 0)
-                    msg.channel.send(items.join('\n'));
+                (msg.channel as TextChannel).send(items.join('\n'));
                 else
-                    msg.channel.send(`:cd: There are no songs in the queue.`);
+                (msg.channel as TextChannel).send(`:cd: There are no songs in the queue.`);
             })
             .on('clear', (cmd: ParsedMessage, msg: Message) => {
                 this.player.clear();
@@ -158,11 +169,12 @@ export class Bot implements IBot {
                         this.player.setVolume(volume);
                     }
                 }
-                msg.channel.send(`:speaker: Volume is at ${this.player.getVolume()}`);
+                (msg.channel as TextChannel).send(`:speaker: Volume is at ${this.player.getVolume()}`);
             })
             .on('repeat', (cmd: ParsedMessage, msg: Message) => {
                 this.config.queue.repeat = !this.config.queue.repeat;
-                msg.channel.send(`Repeat mode is ${this.config.queue.repeat ? 'on':'off'}`);
+                (msg.channel as TextChannel).send(`Repeat mode is ${this.config.queue.repeat ? 'on':'off'}`);
+               
             });
 
         this.client = new Client()
@@ -173,7 +185,11 @@ export class Bot implements IBot {
                 if(handlers) {
                     logger.debug(`Bot Command: ${msg.content}`);
                     // TODO make the player able to handle multiple channels
-                    this.player.channel = msg.channel;
+                    this.player.channel  = (msg.channel as TextChannel)//recheck important
+                //this.player.channel as TextChannel =  msg.channel;
+              
+               
+               
                     handlers.forEach(handle => {
                         handle(parsed, msg);
                     });
@@ -187,7 +203,7 @@ export class Bot implements IBot {
                 this.online = true;
                 this.player.determineStatus();
             })
-            .on('reconnecting', () => {
+            .on('disconnect', () => {
                 logger.debug('Reconnecting...');
             })
             .on('disconnect', () => {
@@ -209,7 +225,7 @@ export class Bot implements IBot {
             .on('exit', (args: ParsedArgs, rl: Interface) => {
                 if(this.client)
                     this.client.destroy();
-                rl.close();
+               rl.close();
             });
         
         this.status = new BotStatus(this.client);
