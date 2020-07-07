@@ -10,19 +10,19 @@
   "author": "Malexion",
   "license": "ISC",
   "dependencies": {
-    "@types/jsonfile": "^5.0.0",
+    "@types/jsonfile": "^5.0.1",
     "@types/minimist": "^1.2.0",
     "@types/moment": "^2.13.0",
-    "@types/node": "^12.0.7",
+    "@types/node": "^12.12.48",
     "@types/winston": "^2.4.4",
-    "discord-command-parser": "^1.2.1",
-    "discord.js": "^11.5.1",
+    "discord-command-parser": "^1.4.3",
+    "discord.js": "^12.2.0",
     "jsonfile": "^2.4.0",
     "minimist": "^1.2.3",
-    "moment": "^2.24.0",
-    "node-opus": "^0.3.2",
-    "typescript": "^3.5.1",
-    "winston": "^3.2.1",
-    "ytdl-core": "^0.29.4"
+    "moment": "^2.27.0",
+    "node-opus": "^0.3.3",
+    "typescript": "^3.9.6",
+    "winston": "^3.3.3",
+    "ytdl-core": "^3.1.2"
   }
 }

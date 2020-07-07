@@ -1,5 +1,5 @@
 
-import { ParsedMessage } from 'discord-command-parser';
+import { ParsedMessage, SuccessfulParsedMessage } from 'discord-command-parser';
 import { Message } from 'discord.js';
 import * as ytdl from 'ytdl-core';
 import { secondsToTimestamp } from '../bot';
@@ -13,7 +13,7 @@ export default class YoutubePlugin implements IBotPlugin {
         bot.helptext += '\n`youtube [url/idfragment]` - Add youtube audio to the queue\n'
         const player = bot.player;
 
-        bot.commands.on(youtubeType, (cmd: ParsedMessage, msg: Message) => {
+        bot.commands.on(youtubeType, (cmd: SuccessfulParsedMessage<Message>, msg: Message) => {
             if(cmd.arguments.length > 0) {
                 cmd.arguments.forEach(arg => {
                     player.addMedia({ type: youtubeType, url: arg, requestor: msg.author.username });

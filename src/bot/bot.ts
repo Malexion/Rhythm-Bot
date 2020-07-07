@@ -1,5 +1,5 @@
 
-import { parse, ParsedMessage } from 'discord-command-parser';
+import { parse, SuccessfulParsedMessage } from 'discord-command-parser';
 import { Client, Message } from 'discord.js';
 import { ParsedArgs } from 'minimist';
 import { Interface } from 'readline';
@@ -39,16 +39,16 @@ export class Bot implements IBot {
         this.online = false;
         this.config = fuse(clone(DefaultBotConfig), config);
         this.commands = new CommandMap()
-            .on('ping', (cmd: ParsedMessage, msg: Message) => {
+            .on('ping', (cmd: SuccessfulParsedMessage<Message>, msg: Message) => {
                 let phrases = pingPhrases.slice();
                 if(msg.guild)
                     phrases = phrases.concat(msg.guild.emojis.array().map(x => x.name));
                 msg.channel.send(random(phrases));
             })
-            .on('help', (cmd: ParsedMessage, msg: Message) => {
+            .on('help', (cmd: SuccessfulParsedMessage<Message>, msg: Message) => {
                 msg.channel.send(this.helptext);
             })
-            .on('join', (cmd: ParsedMessage, msg: Message) => {
+            .on('join', (cmd: SuccessfulParsedMessage<Message>, msg: Message) => {
                 joinUserChannel(msg)
                     .then(connection => {
                         this.player.connection = connection;
@@ -60,7 +60,7 @@ export class Bot implements IBot {
                         msg.channel.send(err);
                     });
             })
-            .on('leave', (cmd: ParsedMessage, msg: Message) => {
+            .on('leave', (cmd: SuccessfulParsedMessage<Message>, msg: Message) => {
                 this.player.stop();
                 this.player.connection = null;
                 this.client.voiceConnections.forEach(conn => {
@@ -68,7 +68,7 @@ export class Bot implements IBot {
                     msg.channel.send(`:mute: Disconnecting from channel: ${conn.channel.name}`);
                 });
             })
-            .on('play', (cmd: ParsedMessage, msg: Message) => {
+            .on('play', (cmd: SuccessfulParsedMessage<Message>, msg: Message) => {
                 new Promise(done => {
                     if(!this.player.connection) {
                         joinUserChannel(msg)
@@ -83,10 +83,10 @@ export class Bot implements IBot {
                     this.player.play();
                 });
             })
-            .on('pause', (cmd: ParsedMessage, msg: Message) => {
+            .on('pause', (cmd: SuccessfulParsedMessage<Message>, msg: Message) => {
                 this.player.pause();
             })
-            .on('time', (cmd: ParsedMessage, msg: Message) => {
+            .on('time', (cmd: SuccessfulParsedMessage<Message>, msg: Message) => {
                 let media = this.player.queue.first;
                 if(this.player.playing && this.player.dispatcher) {
                     let elapsed = secondsToTimestamp(this.player.dispatcher.totalStreamTime / 1000);
@@ -95,7 +95,7 @@ export class Bot implements IBot {
                     msg.channel.send(`00:00:00 / ${media.duration}`);
                 }
             })
-            .on('add', (cmd: ParsedMessage, msg: Message) => {
+            .on('add', (cmd: SuccessfulParsedMessage<Message>, msg: Message) => {
                 if(cmd.arguments.length > 0) {
                     cmd.arguments.forEach(arg => {
                         let parts = arg.split(':');
@@ -106,7 +106,7 @@ export class Bot implements IBot {
                     });
                 }
             })
-            .on('remove', (cmd: ParsedMessage, msg: Message) => {
+            .on('remove', (cmd: SuccessfulParsedMessage<Message>, msg: Message) => {
                 if(cmd.arguments.length > 0) {
                     let idx = parseInt(cmd.arguments[0]);
                     let item = this.player.at(idx - 1);
@@ -115,13 +115,13 @@ export class Bot implements IBot {
                     }
                 }
             })
-            .on('skip', (cmd: ParsedMessage, msg: Message) => {
+            .on('skip', (cmd: SuccessfulParsedMessage<Message>, msg: Message) => {
                 this.player.skip();
             })
-            .on('stop', (cmd: ParsedMessage, msg: Message) => {
+            .on('stop', (cmd: SuccessfulParsedMessage<Message>, msg: Message) => {
                 this.player.stop();
             })
-            .on('list', (cmd: ParsedMessage, msg: Message) => {
+            .on('list', (cmd: SuccessfulParsedMessage<Message>, msg: Message) => {
                 let items = this.player.queue
                     .map((item, idx) => `${idx + 1}. Type: "${item.type}", Title: "${item.name}${item.requestor ? `", Requested By: ${item.requestor}`:''}"`);
                 if(items.length > 0)
@@ -129,10 +129,10 @@ export class Bot implements IBot {
                 else
                     msg.channel.send(`:cd: There are no songs in the queue.`);
             })
-            .on('clear', (cmd: ParsedMessage, msg: Message) => {
+            .on('clear', (cmd: SuccessfulParsedMessage<Message>, msg: Message) => {
                 this.player.clear();
             })
-            .on('move', (cmd: ParsedMessage, msg: Message) => {
+            .on('move', (cmd: SuccessfulParsedMessage<Message>, msg: Message) => {
                 if(cmd.arguments.length > 1) {
                     let current = Math.min(Math.max(parseInt(cmd.arguments[0]), 0), this.player.queue.length - 1),
                         targetDesc = cmd.arguments[0],
@@ -147,10 +147,10 @@ export class Bot implements IBot {
                     this.player.move(current, target);
                 }
             })
-            .on('shuffle', (cmd: ParsedMessage, msg: Message) => {
+            .on('shuffle', (cmd: SuccessfulParsedMessage<Message>, msg: Message) => {
                 this.player.shuffle();
             })
-            .on('volume', (cmd: ParsedMessage, msg: Message) => {
+            .on('volume', (cmd: SuccessfulParsedMessage<Message>, msg: Message) => {
                 if(cmd.arguments.length > 0) {
                     let temp = cmd.arguments[0];
                     if(temp) {
@@ -160,7 +160,7 @@ export class Bot implements IBot {
                 }
                 msg.channel.send(`:speaker: Volume is at ${this.player.getVolume()}`);
             })
-            .on('repeat', (cmd: ParsedMessage, msg: Message) => {
+            .on('repeat', (cmd: SuccessfulParsedMessage<Message>, msg: Message) => {
                 this.config.queue.repeat = !this.config.queue.repeat;
                 msg.channel.send(`Repeat mode is ${this.config.queue.repeat ? 'on':'off'}`);
             });

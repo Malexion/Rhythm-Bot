@@ -1,5 +1,5 @@
 import { MediaItem, IBot, IBotPlugin, readDir, readJson, writeJson, deleteFile, fileExists } from '../resources';
-import { ParsedMessage } from 'discord-command-parser';
+import { SuccessfulParsedMessage } from 'discord-command-parser';
 import { Message } from 'discord.js';
 
 const playlistDir = './playlists';
@@ -12,7 +12,7 @@ export default class PlaylistPlugin implements IBotPlugin {
 
     preInitialize(bot: IBot): void {
 
-        bot.commands.on('playlist', (cmd: ParsedMessage, msg: Message) => {
+        bot.commands.on('playlist', (cmd: SuccessfulParsedMessage<Message>, msg: Message) => {
             switch(cmd.arguments[0]) {
                 case 'load': this.load(cmd, msg, bot); break;
                 case 'save': this.save(cmd, msg, bot); break;
@@ -27,7 +27,7 @@ export default class PlaylistPlugin implements IBotPlugin {
         
     }
 
-    list(cmd: ParsedMessage, msg: Message, bot: IBot) {
+    list(cmd: SuccessfulParsedMessage<Message>, msg: Message, bot: IBot) {
         let files = readDir(playlistDir)
             .filter(file => file.includes('.json'))
             .map((file, i) => `${i + 1}. ${file.replace('.json', '')}`);
@@ -35,7 +35,7 @@ export default class PlaylistPlugin implements IBotPlugin {
         msg.channel.send(`Playlists: \n\n${files.length == 0 ? 'No Playlists' : files.join('\n')}`);
     }
 
-    load(cmd: ParsedMessage, msg: Message, bot: IBot) {
+    load(cmd: SuccessfulParsedMessage<Message>, msg: Message, bot: IBot) {
         let name = cmd.arguments[1];
         if(name) {
             let queue: IPlaylist = readJson(playlistDir, `${name}.json`) || { list: [] };
@@ -52,7 +52,7 @@ export default class PlaylistPlugin implements IBotPlugin {
         }
     }
 
-    save(cmd: ParsedMessage, msg: Message, bot: IBot) {
+    save(cmd: SuccessfulParsedMessage<Message>, msg: Message, bot: IBot) {
         let name = cmd.arguments[1];
         if(name) {
             let queue: IPlaylist = { list: bot.player.queue.map(x => x) };
@@ -63,7 +63,7 @@ export default class PlaylistPlugin implements IBotPlugin {
         }
     }
 
-    delete(cmd: ParsedMessage, msg: Message, bot: IBot) {
+    delete(cmd: SuccessfulParsedMessage<Message>, msg: Message, bot: IBot) {
         let name = cmd.arguments[1];
         if(name && fileExists(playlistDir, `${name}.json`)) {
             deleteFile(playlistDir, `${name}.json`);
