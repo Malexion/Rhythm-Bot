@@ -218,7 +218,7 @@ export class Bot implements IBot {
         let files = readDir('./dist/plugins');
         if(files) {
             this.plugins = files
-                .filter(file => !file.includes('.map'))
+                .filter(file => !file.endsWith('.map'))
                 .map(file => requireFile('./dist/plugins', file).default)
                 .map(construct => new construct());
             this.plugins.forEach(plugin => plugin.preInitialize(this));
