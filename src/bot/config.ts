@@ -23,6 +23,9 @@ export interface BotConfig {
         forwardErrorCorrection?: boolean;
         volume?: number;
         bitrate?: number | 'auto';
+    },
+    emojis?: {
+        addSong?: string;
     }
 }
 
@@ -49,5 +52,8 @@ export const DefaultBotConfig: BotConfig = {
         volume: 1,
         bitrate: 'auto',
         forwardErrorCorrection: false
+    },
+    emojis: {
+        addSong: '👍'
     }
 };

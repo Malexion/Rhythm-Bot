@@ -111,7 +111,7 @@ export class Bot implements IBot {
                                 .setThumbnail(v.image)
                                 .setURL(v.url);
                             msg.channel.send(embed)
-                                .then(m => m.react('➕'));
+                                .then(m => m.react(config.emojis.addSong));
                         });
                 });
             })
@@ -204,7 +204,7 @@ export class Bot implements IBot {
                     if (msg.message.embeds.length > 0) {
                         const embed = msg.message.embeds[0];
                         if (embed) {
-                            if (msg.emoji.name === '➕' && embed.url) {
+                            if (msg.emoji.name === config.emojis.addSong && embed.url) {
                                 this.player.addMedia({ type: 'youtube', url: embed.url, requestor: user.username });
                             }
                         }
