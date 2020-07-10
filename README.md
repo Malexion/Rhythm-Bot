@@ -1,6 +1,6 @@
 # Rhythm-Bot 2.1 Search Update
 - New search command anything after !search will be searched against youtube and return the top 3 results
-- Press the thumbs up reaction emoji to add the item to your queue
+- Press the plus reaction emoji to add the item to your queue
     - Note that you will want to give the bot permission to remove emojis in the text channel
 
 Note: This is not the bot listed here [https://rythmbot.co/](https://rythmbot.co/)
