@@ -41,3 +41,4 @@ dist
 dev-run.bat
 app.js
 test.js
+bot-config.json
