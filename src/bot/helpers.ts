@@ -4,7 +4,7 @@ import * as moment from 'moment';
 
 export function joinUserChannel(msg: Message): Promise<VoiceConnection> {
     return new Promise((done, error) => {
-        let channel = msg.member.voiceChannel;
+        let channel = msg.member.voice.channel;
         if(channel && channel.type === 'voice') {
             channel.join()
                 .then(connection => {

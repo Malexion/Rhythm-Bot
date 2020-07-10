@@ -42,7 +42,7 @@ export class Bot implements IBot {
             .on('ping', (cmd: SuccessfulParsedMessage<Message>, msg: Message) => {
                 let phrases = pingPhrases.slice();
                 if(msg.guild)
-                    phrases = phrases.concat(msg.guild.emojis.array().map(x => x.name));
+                    phrases = phrases.concat(msg.guild.emojis.cache.array().map(x => x.name));
                 msg.channel.send(random(phrases));
             })
             .on('help', (cmd: SuccessfulParsedMessage<Message>, msg: Message) => {
@@ -63,7 +63,7 @@ export class Bot implements IBot {
             .on('leave', (cmd: SuccessfulParsedMessage<Message>, msg: Message) => {
                 this.player.stop();
                 this.player.connection = null;
-                this.client.voiceConnections.forEach(conn => {
+                this.client.voice.connections.forEach(conn => {
                     conn.disconnect();
                     msg.channel.send(`:mute: Disconnecting from channel: ${conn.channel.name}`);
                 });
@@ -186,9 +186,6 @@ export class Bot implements IBot {
                     logger.debug('Rhythm Bot Online!');
                 this.online = true;
                 this.player.determineStatus();
-            })
-            .on('reconnecting', () => {
-                logger.debug('Reconnecting...');
             })
             .on('disconnect', () => {
                 this.online = false;

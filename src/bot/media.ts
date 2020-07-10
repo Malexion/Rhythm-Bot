@@ -1,5 +1,5 @@
 
-import { VoiceConnection, StreamDispatcher, TextChannel, DMChannel, GroupDMChannel } from 'discord.js';
+import { VoiceConnection, StreamDispatcher, TextChannel, DMChannel, NewsChannel } from 'discord.js';
 import { Readable } from 'stream';
 import { BotConfig } from './config';
 import { BotStatus } from './bot-status';
@@ -77,7 +77,7 @@ export class MediaPlayer {
     stopping: boolean = false;
     config: BotConfig;
     status: BotStatus;
-    channel: TextChannel | DMChannel | GroupDMChannel;
+    channel: TextChannel | DMChannel | NewsChannel;
     connection?: VoiceConnection;
     dispatcher?: StreamDispatcher;
 
@@ -91,6 +91,7 @@ export class MediaPlayer {
             let type = this.typeRegistry.get(item.type);
             if(type) {
                 this.queue.enqueue(item);
+                this.channel.send(`Looking Up Media...`);
                 type.getDetails(item)
                     .then((media) => {
                         item.name = media.name;
@@ -139,11 +140,12 @@ export class MediaPlayer {
             this.dispatcher.end();
             this.dispatcher = null;
         }
-        this.dispatcher = this.connection.playStream(stream, {
+        this.dispatcher = this.connection.play(stream, {
             seek: this.config.stream.seek,
             volume: this.config.stream.volume,
-            passes: this.config.stream.passes,
-            bitrate: this.config.stream.bitrate
+            bitrate: this.config.stream.bitrate,
+            fec: this.config.stream.forwardErrorCorrection,
+            plp: this.config.stream.packetLossPercentage
         });
         this.dispatcher.on('start', () => {
             this.playing = true;

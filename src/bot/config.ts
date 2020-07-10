@@ -19,7 +19,8 @@ export interface BotConfig {
     },
     stream?: {
         seek?: number;
-        passes?: number;
+        packetLossPercentage?: number;
+        forwardErrorCorrection?: boolean;
         volume?: number;
         bitrate?: number | 'auto';
     }
@@ -45,8 +46,8 @@ export const DefaultBotConfig: BotConfig = {
     },
     stream: {
         seek: 0,
-        passes: 3, 
         volume: 1,
-        bitrate: 'auto'
+        bitrate: 'auto',
+        forwardErrorCorrection: false
     }
 };

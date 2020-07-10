@@ -1,4 +1,4 @@
-import { Client, PresenceStatus } from "discord.js";
+import { Client, PresenceStatus, PresenceStatusData } from "discord.js";
 
 export class BotStatus {
     client: Client;
@@ -9,13 +9,13 @@ export class BotStatus {
 
     setBanner(status: string) {
         this.client.user.setPresence({
-            game: {
+            activity: {
                 name: status
             }
         });
     }
 
-    setActivity(activity: PresenceStatus) {
+    setActivity(activity: PresenceStatusData) {
         this.client.user.setStatus(activity)
     }
     
