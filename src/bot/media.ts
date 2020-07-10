@@ -145,7 +145,8 @@ export class MediaPlayer {
             volume: this.config.stream.volume,
             bitrate: this.config.stream.bitrate,
             fec: this.config.stream.forwardErrorCorrection,
-            plp: this.config.stream.packetLossPercentage
+            plp: this.config.stream.packetLossPercentage,
+            highWaterMark: 1024 * 1024 * 10
         });
         this.dispatcher.on('start', () => {
             this.playing = true;
