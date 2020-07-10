@@ -146,7 +146,7 @@ export class MediaPlayer {
             bitrate: this.config.stream.bitrate,
             fec: this.config.stream.forwardErrorCorrection,
             plp: this.config.stream.packetLossPercentage,
-            highWaterMark: 1024 * 1024 * 10
+            highWaterMark: 1024
         });
         this.dispatcher.on('start', () => {
             this.playing = true;
@@ -168,16 +168,13 @@ export class MediaPlayer {
         this.dispatcher.on('end', (reason: string) => {
             console.log(`Stream Ended: ${reason}`);
             logger.debug(`Stream Ended: ${reason}`);
-            if(this.playing) {
-                this.playing = false;
-                this.dispatcher = null;
-                this.determineStatus();
-                if(!this.stopping) {
-                    let track = this.queue.dequeue();
-                    if(this.config.queue.repeat)
-                        this.queue.enqueue(track);
-                        this.play();
-                }
+            this.dispatcher = null;
+            this.determineStatus();
+            if(!this.stopping) {
+                let track = this.queue.dequeue();
+                if(this.config.queue.repeat)
+                    this.queue.enqueue(track);
+                    this.play();
             }
             this.stopping = false;
         });
@@ -213,6 +210,7 @@ export class MediaPlayer {
             let item = this.queue.first;
             this.stopping = true;
             this.paused = false;
+            this.playing = false;
             this.dispatcher.end();
             this.determineStatus();
             if(this.channel)
