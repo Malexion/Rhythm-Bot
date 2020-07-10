@@ -3,7 +3,7 @@ import { BotConfig } from "./config";
 import { Client } from "discord.js";
 import { CommandMap } from "./command-map";
 import { ConsoleReader } from "./console-reader";
-import { MediaPlayer } from "./media";
+import { MediaPlayer, MediaItem } from "./media";
 
 export interface IBot {
     config: BotConfig;

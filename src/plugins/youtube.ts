@@ -1,19 +1,22 @@
 
 import { ParsedMessage } from 'discord-command-parser';
-import { Message } from 'discord.js';
+import { Message, ClientUser } from 'discord.js';
 import * as ytdl from 'ytdl-core';
-import { secondsToTimestamp } from '../bot';
+import { secondsToTimestamp, MediaPlayer } from '../bot';
 import { IBot, IBotPlugin, MediaItem } from '../resources';
 
 const youtubeType: string = 'youtube';
 
 export default class YoutubePlugin implements IBotPlugin {
 
-    preInitialize(bot: IBot): void {
-        bot.helptext += '\n`youtube [url/idfragment]` - Add youtube audio to the queue\n'
-        const player = bot.player;
 
+
+    preInitialize(bot: IBot): void {
+        bot.helptext += '\n` !add youtube:*youtubecode*\n'
+        const player = bot.player;
+        
         bot.commands.on(youtubeType, (cmd: ParsedMessage, msg: Message) => {
+        
             if(cmd.arguments.length > 0) {
                 cmd.arguments.forEach(arg => {
                     player.addMedia({ type: youtubeType, url: arg, requestor: msg.author.username });
@@ -25,11 +28,12 @@ export default class YoutubePlugin implements IBotPlugin {
             youtubeType,
             {
                 getDetails: (item: MediaItem) => new Promise((done, error) => {
-                    item.url = item.url.includes('://') ? item.url : `https://www.youtube.com/watch?v=${item.url}`;
+                  // item.url = item.url.includes('://') ? item.url : `https://www.youtube.com/watch?v=${item.url}`;
+                  
                     let result = ytdl.getInfo(item.url, (err, info) => {
                         if(info) {
                             item.name = info.title ? info.title : 'Unknown';
-                            console.log("secunde din melodie: "+info.length_seconds);
+                            console.log("song length: "+info.length_seconds);
                             item.duration = secondsToTimestamp(parseInt(info.length_seconds) || 0);
                             done(item);
                         } else

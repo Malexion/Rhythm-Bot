@@ -3,8 +3,8 @@ import { Readable } from 'stream';
 import { BotConfig } from './config';
 import { BotStatus } from './bot-status';
 import { logger } from './logger';
-import YoutubePlugin from '../plugins/youtube';
-import { runInThisContext } from 'vm';
+//import YoutubePlugin from '../plugins/youtube';
+//import { runInThisContext } from 'vm';
 
 
 export interface MediaItem {
@@ -90,7 +90,6 @@ constructor(config: BotConfig, status: BotStatus) {
 
 addMedia(item: MediaItem): Promise<void> {
     return new Promise((done, error) => {
-        console.log("tip item: "+item.type);
         let type = this.typeRegistry.get(item.type);
         if(type) {
             this.queue.enqueue(item);
@@ -144,8 +143,6 @@ dispatchStream(stream: Readable, item: MediaItem) {
     }
 
     this.dispatcher =  this.connection.play(stream);
-  
-   console.log("after play");
     this.dispatcher.on('start', () => {
         this.playing = true;
         this.determineStatus(); 
@@ -165,17 +162,9 @@ dispatchStream(stream: Readable, item: MediaItem) {
             this.channel.send(`Error Playing Song: ${err}`);
     });
 
-    console.log("totla length "+this.dispatcher.totalStreamTime+" current length"+this.dispatcher.streamTime);
-    //if(this.dispatcher.streamTime >= stream.read.length){
-    //     this.playing = false;
-  //  }
-
-
-
     //TEST
-    this.dispatcher.on('finish', (reason: string) => {
-        console.log(`Stream Ended: ${reason}`);
-        logger.debug(`Stream Ended: ${reason}`);
+    this.dispatcher.on('finish', (/*reason: string*/) => {
+        logger.debug(`Stream Ended: `);
         if(this.playing) {
             this.playing = false;
             this.dispatcher = null;
@@ -218,7 +207,6 @@ play() {
     let item = this.queue.first;
     if(item && this.connection) {
         let type = this.typeRegistry.get(item.type);
-        console.log("play type: "+type);
         if(type) {
             if(!this.playing) {
                 type.getStream(item)

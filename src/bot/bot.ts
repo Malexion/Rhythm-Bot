@@ -12,7 +12,7 @@ import { BotConfig, DefaultBotConfig } from './config';
 import { ConsoleReader } from './console-reader';
 import { joinUserChannel, secondsToTimestamp } from './helpers';
 import { logger } from './logger';
-import { MediaPlayer } from './media';
+import { MediaPlayer, MediaItem } from './media';
 
 const helptext = readFile('./helptext.txt');
 const random = (array) => {
@@ -30,6 +30,7 @@ export class Bot implements IBot {
     commands: CommandMap;
     console: ConsoleReader;
     player: MediaPlayer;
+    mediaItem:MediaItem;
     online: boolean;
     helptext: string;
     plugins: IBotPlugin[];
@@ -88,9 +89,21 @@ export class Bot implements IBot {
                     } else
                         done();
                 }).then(() => {
-                    console.log('play song......');
                    
+                   if(cmd.arguments.length<0)
                     this.player.play();
+                    else if(cmd.arguments.length>0){
+                        let arglink =  cmd.arguments[0];
+                        if(arglink.match("^(http(s):\/\/)?((w){3}.)?youtu(be|.be)?(\.com)?\/.+")){
+                            this.player.addMedia({type:'youtube', url:arglink,requestor:msg.author.username});
+                            this.player.play();
+
+                        }else{
+                            (msg.channel as TextChannel).send(`Invalid argument !`);
+                        }
+                            
+
+                    }
                 });
             })
             .on('pause', (cmd: ParsedMessage, msg: Message) => {
@@ -108,12 +121,15 @@ export class Bot implements IBot {
             .on('add', (cmd: ParsedMessage, msg: Message) => {
                 if(cmd.arguments.length > 0) {
                     cmd.arguments.forEach(arg => {
-                        let parts = arg.split(':');
-                        console.log("parti: "+parts[0]+" | "+parts[1]);
-                        if(parts.length == 2) {
-                            this.player.addMedia({ type: parts[0], url: parts[1], requestor: msg.author.username });
-                        } else
-                        (msg.channel as TextChannel).send(`Invalid type format`);
+
+                        //youtube only...for now
+                        if(arg.match("^(http(s):\/\/)?((w){3}.)?youtu(be|.be)?(\.com)?\/.+")){
+                            this.player.addMedia({type:'youtube', url:arg,requestor:msg.author.username});
+
+                        }else{
+                            (msg.channel as TextChannel).send(`Invalid type format`);
+                        }
+
                     });
                 }
             })

@@ -6,12 +6,13 @@ Note: This is not the bot listed here [https://rythmbot.co/](https://rythmbot.co
 ## Description
 
 Simple little music bot to queue up and play youtube audio over discord voice channels.
+Add songs by using 'add' command like this !add *youtubelink* and then !play (new style) or just !play *youtubelink*
 
 ## Unlisted dependencies
 
 - `Python2.7` This version is required for node-gyp I think?
-- `FFMPEG` command line tool
-- `node-gyp` command line tool
+- `FFMPEG` command line tool builded with following args: ./configure --enable-libopus --enable-libfdk-aac --enable-nonfree --enable-gpl --with-libvpx
+- `node-gyp` command line tool - to be removed !
 - `node.js` version 10.X.X or higher is recommended
 - `typescript` types for javascript, enables easier group collaboration and simple right click to look up definitions
 
