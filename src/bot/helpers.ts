@@ -1,5 +1,5 @@
 
-import { Message, VoiceConnection } from 'discord.js';
+import { Message, VoiceConnection, MessageEmbed } from 'discord.js';
 import * as moment from 'moment';
 
 export function joinUserChannel(msg: Message): Promise<VoiceConnection> {
@@ -20,4 +20,9 @@ export function secondsToTimestamp(seconds: number): string {
         .startOf('day')
         .seconds(seconds)
         .format('HH:mm:ss');
+}
+
+export function createEmbed() {
+    return new MessageEmbed()
+        .setColor('#0099ff');
 }

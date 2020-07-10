@@ -28,14 +28,14 @@ export default class YoutubePlugin implements IBotPlugin {
                     item.url = item.url.includes('://') ? item.url : `https://www.youtube.com/watch?v=${item.url}`;
                     let result = ytdl.getInfo(item.url)
                         .then(info => {
-                            item.name = info.title ? info.title : 'Unknown';
+                            item.name = info.videoDetails.title ? info.videoDetails.title : 'Unknown';
                             item.duration = secondsToTimestamp(parseInt(info.videoDetails.lengthSeconds) || 0);
                             done(item);
                         })
                         .catch(err => error(err));
                 }),
                 getStream: (item: MediaItem) => new Promise((done, error) => {
-                    let stream = ytdl(item.url, { filter: 'audioonly' });
+                    let stream = ytdl(item.url, { filter: 'audioonly', quality: 'highestaudio' });
                     if(stream)
                         done(stream);
                     else

@@ -4,6 +4,7 @@ import { Readable } from 'stream';
 import { BotConfig } from './config';
 import { BotStatus } from './bot-status';
 import { logger } from './logger';
+import { createEmbed } from './helpers';
 
 export interface MediaItem {
     type: string;
@@ -91,7 +92,6 @@ export class MediaPlayer {
             let type = this.typeRegistry.get(item.type);
             if(type) {
                 this.queue.enqueue(item);
-                this.channel.send(`Looking Up Media...`);
                 type.getDetails(item)
                     .then((media) => {
                         item.name = media.name;
@@ -105,7 +105,15 @@ export class MediaPlayer {
         })
         .then((item: MediaItem) => {
             if(this.channel && item)
-                this.channel.send(`:heavy_plus_sign: ${item.type} track added: "${item.name}" @ #${this.queue.indexOf(item) + 1}`);
+                this.channel.send(
+                    createEmbed()
+                        .setTitle('🎵 Track Added 🎵')
+                        .addFields(
+                            { name: 'Title:', value: item.name, inline: true },
+                            { name: 'Position:', value: `${this.queue.indexOf(item) + 1}`, inline: true },
+                            { name: 'Requested By:', value: item.requestor, inline: true }
+                        )
+                );
         })
         .catch(err => {
             if(this.channel)
@@ -146,7 +154,7 @@ export class MediaPlayer {
             bitrate: this.config.stream.bitrate,
             fec: this.config.stream.forwardErrorCorrection,
             plp: this.config.stream.packetLossPercentage,
-            highWaterMark: 1024
+            highWaterMark: 1<<25
         });
         this.dispatcher.on('start', () => {
             this.playing = true;

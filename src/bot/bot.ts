@@ -1,8 +1,9 @@
 
 import { parse, SuccessfulParsedMessage } from 'discord-command-parser';
-import { Client, Message } from 'discord.js';
+import { Client, Message, MessageEmbed, MessageReaction, User } from 'discord.js';
 import { ParsedArgs } from 'minimist';
 import { Interface } from 'readline';
+import * as yts from 'yt-search';
 import { readDir, readFile, requireFile } from '../directory';
 import { clone, fuse } from '../iteration/index';
 import { IBot, IBotPlugin } from './bot-interface';
@@ -95,6 +96,25 @@ export class Bot implements IBot {
                     msg.channel.send(`00:00:00 / ${media.duration}`);
                 }
             })
+            .on('search', (cmd: SuccessfulParsedMessage<Message>, msg: Message) => {
+                yts({
+                    query: cmd.body,
+                    pages: 1
+                }, (err, result) => {
+                    result.videos
+                        .slice(0, 3)
+                        .forEach((v, idx) => {
+                            const embed = new MessageEmbed()
+                                .setColor('#0099ff')
+                                .setTitle(`${v.title} (${v.timestamp})`)
+                                .addField('Author:', `${v.author.name}`)
+                                .setThumbnail(v.image)
+                                .setURL(v.url);
+                            msg.channel.send(embed)
+                                .then(m => m.react('👍'));
+                        });
+                });
+            })
             .on('add', (cmd: SuccessfulParsedMessage<Message>, msg: Message) => {
                 if(cmd.arguments.length > 0) {
                     cmd.arguments.forEach(arg => {
@@ -177,6 +197,19 @@ export class Bot implements IBot {
                     handlers.forEach(handle => {
                         handle(parsed, msg);
                     });
+                }
+            })
+            .on('messageReactionAdd', (msg: MessageReaction, user: User) => {
+                if (msg.message.author.id === this.client.user.id && user.id !== this.client.user.id) {
+                    if (msg.message.embeds.length > 0) {
+                        const embed = msg.message.embeds[0];
+                        if (embed) {
+                            if (msg.emoji.name === '👍' && embed.url) {
+                                this.player.addMedia({ type: 'youtube', url: embed.url, requestor: user.username });
+                            }
+                        }
+                        msg.users.remove(user.id);
+                    }
                 }
             })
             .on('ready', () => {

@@ -1,6 +1,6 @@
 {
   "name": "rhythm-bot",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "",
   "main": "dist/app.js",
   "scripts": {
@@ -15,6 +15,7 @@
     "@types/moment": "^2.13.0",
     "@types/node": "^12.12.48",
     "@types/winston": "^2.4.4",
+    "@types/yt-search": "^2.0.0",
     "discord-command-parser": "^1.4.3",
     "discord.js": "^12.2.0",
     "jsonfile": "^2.4.0",
@@ -23,6 +24,7 @@
     "node-opus": "^0.3.3",
     "typescript": "^3.9.6",
     "winston": "^3.3.3",
+    "yt-search": "^2.1.1",
     "ytdl-core": "^3.1.2"
   }
 }
