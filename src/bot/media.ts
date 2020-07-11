@@ -162,7 +162,7 @@ export class MediaPlayer {
             if(this.channel)
                 this.channel.send(
                     createEmbed()
-                        .setTitle('Now playing')
+                        .setTitle('▶️ Now playing')
                         .setDescription(`${item.name}`)
                         .addField('Requested By', `${item.requestor}`)
                 );
@@ -212,7 +212,7 @@ export class MediaPlayer {
                     this.paused = false;
                     this.determineStatus();
                     if(this.channel)
-                        this.channel.send(createInfoEmbed(`"${this.queue.first.name}" resumed`));
+                        this.channel.send(createInfoEmbed(`⏯️ "${this.queue.first.name}" resumed`));
                 }
             }
         }
@@ -227,7 +227,7 @@ export class MediaPlayer {
             this.dispatcher.end();
             this.determineStatus();
             if(this.channel)
-                this.channel.send(createInfoEmbed(`"${item.name}" stopped`));
+                this.channel.send(createInfoEmbed(`⏹️ "${item.name}" stopped`));
         }
     }
 
@@ -237,12 +237,12 @@ export class MediaPlayer {
             this.paused = false;
             this.dispatcher.end();
             if(this.channel)
-                this.channel.send(createInfoEmbed(`"${item.name}" skipped`));
+                this.channel.send(createInfoEmbed(`⏭️ "${item.name}" skipped`));
         } else if(this.queue.length > 0) {
             let item = this.queue.first;
             this.queue.dequeue();
             if(this.channel)
-                this.channel.send(createInfoEmbed(`"${item.name}" skipped`));
+                this.channel.send(createInfoEmbed(`⏭️ "${item.name}" skipped`));
         }
         this.determineStatus();
     }
@@ -253,7 +253,7 @@ export class MediaPlayer {
             this.paused = true;
             this.determineStatus();
             if(this.channel)
-                this.channel.send(createInfoEmbed(`"${this.queue.first.name}" paused`));
+                this.channel.send(createInfoEmbed(`⏸️ "${this.queue.first.name}" paused`));
         }
     }
 
@@ -263,7 +263,7 @@ export class MediaPlayer {
         this.queue.shuffle();
         this.determineStatus();
         if(this.channel)
-            this.channel.send(createInfoEmbed(`Queue Shuffled`));
+            this.channel.send(createInfoEmbed(`🔀 Queue Shuffled`));
     }
 
     move(currentIdx: number, targetIdx: number) {
