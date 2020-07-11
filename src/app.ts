@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import { requireFile, writeJson, logger, BotConfig, Bot } from './resources';
 
-process.on('unhandledRejection', error => console.error('Uncaught Promise Rejection', error));
+process.on('unhandledRejection', error => logger.error('Uncaught Promise Rejection', error));
 
 if (!fs.existsSync('./bot-config.json')) {
     writeJson({ discord: { token: '<BOT-TOKEN>' } }, './bot-config.json');
