@@ -26,6 +26,10 @@ export interface BotConfig {
     },
     emojis?: {
         addSong?: string;
+        stopSong?: string;
+        playSong?: string;
+        pauseSong?: string;
+        skipSong?: string;
     }
 }
 
@@ -54,6 +58,10 @@ export const DefaultBotConfig: BotConfig = {
         forwardErrorCorrection: false
     },
     emojis: {
-        addSong: '👍'
+        addSong: '👍',
+        stopSong: '⏹️',
+        playSong: '▶️',
+        pauseSong: '⏸️',
+        skipSong: '⏭️'
     }
 };

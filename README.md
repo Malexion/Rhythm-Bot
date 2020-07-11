@@ -1,7 +1,13 @@
-# Rhythm-Bot 2.1 Search Update
+# Rhythm-Bot 2.1.5 Search / Rich Text / Buttons!
 - New search command anything after !search will be searched against youtube and return the top 3 results
-- Press the plus reaction emoji to add the item to your queue
-    - Note that you will want to give the bot permission to remove emojis in the text channel
+- Press the thumbs up reaction emoji to add the item to your queue
+    - Note that you will want to give the bot permission to remove emojis in the text channel, this is the MANAGE_MESSAGES permission
+- Node version has updated from 10.x.x to 12.x.x due to discord.js update
+- In addition to the reaction button interaction on the search command you can now use buttons for the now playing control
+
+![Image](https://imgur.com/B2xLVgU.png)
+
+- There is a bug still lingering where songs don't end properly and transition to the next song, something going on with ytdl-core and ffmpeg so still looking into it.
 
 Note: This is not the bot listed here [https://rythmbot.co/](https://rythmbot.co/)
 
@@ -14,7 +20,7 @@ Simple little music bot to queue up and play youtube audio over discord voice ch
 - `Python2.7` This version is required for node-gyp I think?
 - `FFMPEG` command line tool
 - `node-gyp` command line tool
-- `node.js` version 10.X.X or higher is recommended
+- `node.js` version 12.X.X or higher is required
 - `typescript` types for javascript, enables easier group collaboration and simple right click to look up definitions
 
 ## Installation

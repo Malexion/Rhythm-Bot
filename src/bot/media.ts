@@ -166,10 +166,10 @@ export class MediaPlayer {
                         .setDescription(`${item.name}`)
                         .addField('Requested By', `${item.requestor}`)
                 );
-                msg.react('⏹️');
-                msg.react('▶️');
-                msg.react('⏸️');
-                msg.react('⏭️');
+                msg.react(this.config.emojis.stopSong);
+                msg.react(this.config.emojis.playSong);
+                msg.react(this.config.emojis.pauseSong);
+                msg.react(this.config.emojis.skipSong);
             }
         });
         this.dispatcher.on('debug', (info: string) => {
@@ -183,11 +183,12 @@ export class MediaPlayer {
             if(this.channel)
                 this.channel.send(createErrorEmbed(`Error Playing Song: ${err}`));
         });
-        this.dispatcher.on('end', (reason: string) => {
-            console.log(`Stream Ended: ${reason}`);
+        this.dispatcher.on('close', (reason: string) => {
             logger.debug(`Stream Ended: ${reason}`);
+            this.playing = false;
             this.dispatcher = null;
             this.determineStatus();
+            console.log(this.stopping);
             if(!this.stopping) {
                 let track = this.queue.dequeue();
                 if(this.config.queue.repeat)
@@ -229,7 +230,7 @@ export class MediaPlayer {
             this.stopping = true;
             this.paused = false;
             this.playing = false;
-            this.dispatcher.end();
+            this.dispatcher.destroy();
             this.determineStatus();
             if(this.channel)
                 this.channel.send(createInfoEmbed(`⏹️ "${item.name}" stopped`));
@@ -240,7 +241,7 @@ export class MediaPlayer {
         if(this.playing && this.dispatcher) {
             let item = this.queue.first;
             this.paused = false;
-            this.dispatcher.end();
+            this.dispatcher.destroy();
             if(this.channel)
                 this.channel.send(createInfoEmbed(`⏭️ "${item.name}" skipped`));
         } else if(this.queue.length > 0) {
