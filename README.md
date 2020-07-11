@@ -3,7 +3,8 @@
 - Press the thumbs up reaction emoji to add the item to your queue
     - Note that you will want to give the bot permission to remove emojis in the text channel, this is the MANAGE_MESSAGES permission
 - Node version has updated from 10.x.x to 12.x.x due to discord.js update
-- In addition to the reaction button interaction on the search command you can now use buttons for the now playing control
+- New npm packages to install
+- In addition to the reaction button interaction on the search command you can now use buttons for the new playing control
 
 ![Image](https://imgur.com/B2xLVgU.png)
 
@@ -25,7 +26,7 @@ Simple little music bot to queue up and play youtube audio over discord voice ch
 
 ## Installation
 
-- Install node latest stable release, this was built with node v6.11.0
+- Install node latest stable release, this was built with node v12.16.1
 - For windows run `npm install --global --production windows-build-tools`
     - Run `npm config set python python2.7`
     - Install FFMPEG from the website and add it to your system path. EX: `C:\ffmpeg\bin`
