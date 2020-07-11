@@ -11,7 +11,7 @@ import { BotStatus } from './bot-status';
 import { CommandMap } from './command-map';
 import { BotConfig, DefaultBotConfig } from './config';
 import { ConsoleReader } from './console-reader';
-import { joinUserChannel, secondsToTimestamp } from './helpers';
+import { joinUserChannel, secondsToTimestamp, createEmbed } from './helpers';
 import { logger } from './logger';
 import { MediaPlayer } from './media';
 
@@ -104,14 +104,13 @@ export class Bot implements IBot {
                     result.videos
                         .slice(0, 3)
                         .forEach((v, idx) => {
-                            const embed = new MessageEmbed()
-                                .setColor('#0099ff')
+                            const embed = createEmbed()
                                 .setTitle(`${v.title} (${v.timestamp})`)
                                 .addField('Author:', `${v.author.name}`)
                                 .setThumbnail(v.image)
                                 .setURL(v.url);
                             msg.channel.send(embed)
-                                .then(m => m.react(config.emojis.addSong));
+                                .then(m => m.react(this.config.emojis.addSong));
                         });
                 });
             })
@@ -199,16 +198,25 @@ export class Bot implements IBot {
                     });
                 }
             })
-            .on('messageReactionAdd', (msg: MessageReaction, user: User) => {
-                if (msg.message.author.id === this.client.user.id && user.id !== this.client.user.id) {
-                    if (msg.message.embeds.length > 0) {
-                        const embed = msg.message.embeds[0];
+            .on('messageReactionAdd', async (reaction: MessageReaction, user: User) => {
+                if (reaction.partial) {
+                    try {
+                        await reaction.fetch();
+                    } catch (error) {
+                        console.log(error);
+                        logger.debug(error);
+                        return;
+                    }
+                }
+                if (reaction.message.author.id === this.client.user.id && user.id !== this.client.user.id) {
+                    if (reaction.message.embeds.length > 0) {
+                        const embed = reaction.message.embeds[0];
                         if (embed) {
-                            if (msg.emoji.name === config.emojis.addSong && embed.url) {
+                            if (reaction.emoji.name === this.config.emojis.addSong && embed.url) {
                                 this.player.addMedia({ type: 'youtube', url: embed.url, requestor: user.username });
                             }
                         }
-                        msg.users.remove(user.id);
+                        reaction.users.remove(user.id);
                     }
                 }
             })
