@@ -11,7 +11,7 @@ import { BotStatus } from './bot-status';
 import { CommandMap } from './command-map';
 import { BotConfig, DefaultBotConfig } from './config';
 import { ConsoleReader } from './console-reader';
-import { joinUserChannel, secondsToTimestamp, createEmbed } from './helpers';
+import { joinUserChannel, secondsToTimestamp, createEmbed, createErrorEmbed, createInfoEmbed } from './helpers';
 import { logger } from './logger';
 import { MediaPlayer } from './media';
 
@@ -53,12 +53,12 @@ export class Bot implements IBot {
                 joinUserChannel(msg)
                     .then(connection => {
                         this.player.connection = connection;
-                        msg.channel.send(`:speaking_head: Joined channel: ${connection.channel.name}`);
+                        msg.channel.send(createInfoEmbed(`Joined Channel: ${connection.channel.name}`));
                         if(this.config.auto.play)
                             this.player.play();
                     })
                     .catch(err => {
-                        msg.channel.send(err);
+                        msg.channel.send(createErrorEmbed(err));
                     });
             })
             .on('leave', (cmd: SuccessfulParsedMessage<Message>, msg: Message) => {
@@ -66,7 +66,7 @@ export class Bot implements IBot {
                 this.player.connection = null;
                 this.client.voice.connections.forEach(conn => {
                     conn.disconnect();
-                    msg.channel.send(`:mute: Disconnecting from channel: ${conn.channel.name}`);
+                    msg.channel.send(createInfoEmbed(`Disconnecting from channel: ${conn.channel.name}`));
                 });
             })
             .on('play', (cmd: SuccessfulParsedMessage<Message>, msg: Message) => {
@@ -75,7 +75,7 @@ export class Bot implements IBot {
                         joinUserChannel(msg)
                             .then(conn => {
                                 this.player.connection = conn;
-                                msg.channel.send(`:speaking_head: Joined channel: ${conn.channel.name}`);
+                                msg.channel.send(createInfoEmbed(`Joined Channel: ${conn.channel.name}`));
                                 done();
                             });
                     } else
@@ -91,9 +91,9 @@ export class Bot implements IBot {
                 let media = this.player.queue.first;
                 if(this.player.playing && this.player.dispatcher) {
                     let elapsed = secondsToTimestamp(this.player.dispatcher.totalStreamTime / 1000);
-                    msg.channel.send(`${elapsed} / ${media.duration}`);
+                    msg.channel.send(createInfoEmbed('Time Elapsed', `${elapsed} / ${media.duration}`));
                 } else if(this.player.queue.first) {
-                    msg.channel.send(`00:00:00 / ${media.duration}`);
+                    msg.channel.send(createInfoEmbed('Time Elapsed', `00:00:00 / ${media.duration}`));
                 }
             })
             .on('search', (cmd: SuccessfulParsedMessage<Message>, msg: Message) => {
@@ -105,8 +105,9 @@ export class Bot implements IBot {
                         .slice(0, 3)
                         .forEach((v, idx) => {
                             const embed = createEmbed()
-                                .setTitle(`${v.title} (${v.timestamp})`)
-                                .addField('Author:', `${v.author.name}`)
+                                .setTitle(`${v.title}`)
+                                .addField('Author:', `${v.author.name}`, true)
+                                .addField('Duration', `${v.timestamp}`, true)
                                 .setThumbnail(v.image)
                                 .setURL(v.url);
                             msg.channel.send(embed)
@@ -121,7 +122,7 @@ export class Bot implements IBot {
                         if(parts.length == 2) {
                             this.player.addMedia({ type: parts[0], url: parts[1], requestor: msg.author.username });
                         } else
-                            msg.channel.send(`Invalid type format`);
+                            msg.channel.send(createErrorEmbed(`Invalid media type format`));
                     });
                 }
             })
@@ -144,9 +145,9 @@ export class Bot implements IBot {
                 let items = this.player.queue
                     .map((item, idx) => `${idx + 1}. Type: "${item.type}", Title: "${item.name}${item.requestor ? `", Requested By: ${item.requestor}`:''}"`);
                 if(items.length > 0)
-                    msg.channel.send(items.join('\n'));
+                    msg.channel.send(createInfoEmbed('Current Playing Queue', items.join('\n\n')));
                 else
-                    msg.channel.send(`:cd: There are no songs in the queue.`);
+                    msg.channel.send(createInfoEmbed(`There are no songs in the queue.`));
             })
             .on('clear', (cmd: SuccessfulParsedMessage<Message>, msg: Message) => {
                 this.player.clear();
@@ -177,11 +178,11 @@ export class Bot implements IBot {
                         this.player.setVolume(volume);
                     }
                 }
-                msg.channel.send(`:speaker: Volume is at ${this.player.getVolume()}`);
+                msg.channel.send(createInfoEmbed(`Volume is at ${this.player.getVolume()}`));
             })
             .on('repeat', (cmd: SuccessfulParsedMessage<Message>, msg: Message) => {
                 this.config.queue.repeat = !this.config.queue.repeat;
-                msg.channel.send(`Repeat mode is ${this.config.queue.repeat ? 'on':'off'}`);
+                msg.channel.send(createInfoEmbed(`Repeat mode is ${this.config.queue.repeat ? 'on':'off'}`));
             });
 
         this.client = new Client()
@@ -227,6 +228,12 @@ export class Bot implements IBot {
                     logger.debug('Rhythm Bot Online!');
                 this.online = true;
                 this.player.determineStatus();
+                console.log(`Guilds: ${this.client.guilds.cache.keyArray().length}`);
+                this.client.guilds.cache.forEach(guild => {
+                    console.log(`Guild Name: ${guild.name}`);
+                    const manageMessagesRole = guild.roles.cache.has('MANAGE_MESSAGES');
+                    console.log(`- Can Manage Messages: ${manageMessagesRole}`);
+                });
             })
             .on('disconnect', () => {
                 this.online = false;
@@ -234,6 +241,7 @@ export class Bot implements IBot {
             })
             .on('error', (error: Error) => {
                 logger.error(error);
+                console.log(error);
             })
             .on('guildMemberUpdate', () => {
                 

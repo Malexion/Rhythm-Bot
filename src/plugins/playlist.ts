@@ -1,6 +1,7 @@
 import { MediaItem, IBot, IBotPlugin, readDir, readJson, writeJson, deleteFile, fileExists } from '../resources';
 import { SuccessfulParsedMessage } from 'discord-command-parser';
 import { Message } from 'discord.js';
+import { createInfoEmbed } from '../bot';
 
 const playlistDir = './playlists';
 
@@ -32,7 +33,7 @@ export default class PlaylistPlugin implements IBotPlugin {
             .filter(file => file.includes('.json'))
             .map((file, i) => `${i + 1}. ${file.replace('.json', '')}`);
 
-        msg.channel.send(`Playlists: \n\n${files.length == 0 ? 'No Playlists' : files.join('\n')}`);
+        msg.channel.send(createInfoEmbed(`Playlists`, `${files.length == 0 ? 'No Playlists' : files.join('\n')}`));
     }
 
     load(cmd: SuccessfulParsedMessage<Message>, msg: Message, bot: IBot) {
@@ -47,7 +48,7 @@ export default class PlaylistPlugin implements IBotPlugin {
                     bot.player.queue.push(...queue.list);
                 }
                 bot.player.determineStatus();
-                msg.channel.send(`Loaded Playlist "${name}"`);
+                msg.channel.send(createInfoEmbed(`Loaded Playlist "${name}"`));
             }
         }
     }
@@ -59,7 +60,7 @@ export default class PlaylistPlugin implements IBotPlugin {
             if(queue.list.length > 0) {
                 writeJson(queue, playlistDir, `${name}.json`);
             }
-            msg.channel.send(`Saved Playlist "${name}"`);
+            msg.channel.send(createInfoEmbed(`Saved Playlist "${name}"`));
         }
     }
 
@@ -67,7 +68,7 @@ export default class PlaylistPlugin implements IBotPlugin {
         let name = cmd.arguments[1];
         if(name && fileExists(playlistDir, `${name}.json`)) {
             deleteFile(playlistDir, `${name}.json`);
-            msg.channel.send(`Deleted Playlist "${name}"`);
+            msg.channel.send(createInfoEmbed(`Deleted Playlist "${name}"`));
         }
     }
 
