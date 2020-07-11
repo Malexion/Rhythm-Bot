@@ -156,16 +156,21 @@ export class MediaPlayer {
             plp: this.config.stream.packetLossPercentage,
             highWaterMark: 1<<25
         });
-        this.dispatcher.on('start', () => {
+        this.dispatcher.on('start', async () => {
             this.playing = true;
             this.determineStatus();
-            if(this.channel)
-                this.channel.send(
+            if(this.channel) {
+                const msg = await this.channel.send(
                     createEmbed()
                         .setTitle('▶️ Now playing')
                         .setDescription(`${item.name}`)
                         .addField('Requested By', `${item.requestor}`)
                 );
+                msg.react('⏹️');
+                msg.react('▶️');
+                msg.react('⏸️');
+                msg.react('⏭️');
+            }
         });
         this.dispatcher.on('debug', (info: string) => {
             console.log(info);

@@ -216,6 +216,18 @@ export class Bot implements IBot {
                             if (reaction.emoji.name === this.config.emojis.addSong && embed.url) {
                                 this.player.addMedia({ type: 'youtube', url: embed.url, requestor: user.username });
                             }
+                            if (reaction.emoji.name === '⏹️') {
+                                this.player.stop();
+                            }
+                            if (reaction.emoji.name === '▶️') {
+                                this.player.play();
+                            }
+                            if (reaction.emoji.name === '⏸️') {
+                                this.player.pause();
+                            }
+                            if (reaction.emoji.name === '⏭️') {
+                                this.player.skip();
+                            }
                         }
                         reaction.users.remove(user.id);
                     }
