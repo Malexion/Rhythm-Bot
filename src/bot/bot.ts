@@ -214,18 +214,23 @@ export class Bot implements IBot {
                         const embed = reaction.message.embeds[0];
                         if (embed) {
                             if (reaction.emoji.name === this.config.emojis.addSong && embed.url) {
+                                logger.debug(`Emoji Click: Adding Media: ${embed.url}`);
                                 this.player.addMedia({ type: 'youtube', url: embed.url, requestor: user.username });
                             }
                             if (reaction.emoji.name === this.config.emojis.stopSong) {
+                                logger.debug('Emoji Click: Stopping Song');
                                 this.player.stop();
                             }
                             if (reaction.emoji.name === this.config.emojis.playSong) {
+                                logger.debug('Emoji Click: Playing/Resuming Song');
                                 this.player.play();
                             }
                             if (reaction.emoji.name === this.config.emojis.pauseSong) {
+                                logger.debug('Emoji Click: Pausing Song');
                                 this.player.pause();
                             }
                             if (reaction.emoji.name === this.config.emojis.skipSong) {
+                                logger.debug('Emoji Click: Skipping Song');
                                 this.player.skip();
                             }
                         }

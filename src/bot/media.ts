@@ -183,19 +183,42 @@ export class MediaPlayer {
             if(this.channel)
                 this.channel.send(createErrorEmbed(`Error Playing Song: ${err}`));
         });
-        this.dispatcher.on('close', (reason: string) => {
-            logger.debug(`Stream Ended: ${reason}`);
-            this.playing = false;
-            this.dispatcher = null;
-            this.determineStatus();
-            console.log(this.stopping);
-            if(!this.stopping) {
-                let track = this.queue.dequeue();
-                if(this.config.queue.repeat)
-                    this.queue.enqueue(track);
-                    this.play();
+        this.dispatcher.on('close', () => {
+            logger.debug(`Stream Closed`);
+            if (this.dispatcher) {
+                this.playing = false;
+                this.dispatcher = null;
+                this.determineStatus();
+                if(!this.stopping) {
+                    let track = this.queue.dequeue();
+                    if(this.config.queue.repeat)
+                        this.queue.enqueue(track);
+                        setTimeout(() => {
+                            this.play();
+                        }, 1000);
+                }
+                this.stopping = false;
             }
-            this.stopping = false;
+        });
+        this.dispatcher.on('finish', () => {
+            logger.debug('Stream Finished');
+            if (this.dispatcher) {
+                this.playing = false;
+                this.dispatcher = null;
+                this.determineStatus();
+                if(!this.stopping) {
+                    let track = this.queue.dequeue();
+                    if(this.config.queue.repeat)
+                        this.queue.enqueue(track);
+                        setTimeout(() => {
+                            this.play();
+                        }, 1000);
+                }
+                this.stopping = false;
+            }
+        });
+        this.dispatcher.on('end', (reason: string) => {
+            logger.debug(`Stream Ended: ${reason}`);
         });
     }
 
@@ -230,6 +253,7 @@ export class MediaPlayer {
             this.stopping = true;
             this.paused = false;
             this.playing = false;
+            this.dispatcher.pause();
             this.dispatcher.destroy();
             this.determineStatus();
             if(this.channel)
@@ -241,6 +265,7 @@ export class MediaPlayer {
         if(this.playing && this.dispatcher) {
             let item = this.queue.first;
             this.paused = false;
+            this.dispatcher.pause();
             this.dispatcher.destroy();
             if(this.channel)
                 this.channel.send(createInfoEmbed(`⏭️ "${item.name}" skipped`));
