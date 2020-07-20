@@ -1,27 +1,29 @@
-
-import { ParsedMessage, SuccessfulParsedMessage } from 'discord-command-parser';
-import { Message } from 'discord.js';
+import { IRhythmBotConfig, RhythmBot } from '../bot';
+import { MediaItem } from '../media';
+import { secondsToTimestamp } from '../helpers';
+import { IBotPlugin, IBot, SuccessfulParsedMessage, Message, CommandMap, Client, IBotConfig } from 'discord-bot-quickstart';
 import * as ytdl from 'ytdl-core';
-import { secondsToTimestamp } from '../bot';
-import { IBot, IBotPlugin, MediaItem } from '../resources';
 
 const youtubeType: string = 'youtube';
 
-export default class YoutubePlugin implements IBotPlugin {
+export default class YoutubePlugin extends IBotPlugin {
+    bot: RhythmBot;
 
-    preInitialize(bot: IBot): void {
-        bot.helptext += '\n`youtube [url/idfragment]` - Add youtube audio to the queue\n'
-        const player = bot.player;
+    preInitialize(bot: IBot<IRhythmBotConfig>): void {
+        this.bot = bot as RhythmBot;
+        this.bot.helptext += '\n`youtube [url/idfragment]` - Add youtube audio to the queue\n';
+    }
 
-        bot.commands.on(youtubeType, (cmd: SuccessfulParsedMessage<Message>, msg: Message) => {
+    registerDiscordCommands(map: CommandMap<(cmd: SuccessfulParsedMessage<Message>, msg: Message) => void>) {
+        map.on(youtubeType, (cmd: SuccessfulParsedMessage<Message>, msg: Message) => {
             if(cmd.arguments.length > 0) {
                 cmd.arguments.forEach(arg => {
-                    player.addMedia({ type: youtubeType, url: arg, requestor: msg.author.username });
+                    this.bot.player.addMedia({ type: youtubeType, url: arg, requestor: msg.author.username });
                 });
             }
         });
 
-        player.typeRegistry.set(
+        this.bot.player.typeRegistry.set(
             youtubeType,
             {
                 getDetails: (item: MediaItem) => new Promise((done, error) => {
@@ -45,8 +47,12 @@ export default class YoutubePlugin implements IBotPlugin {
         );
     }
 
-    postInitialize(bot: IBot): void {
-        
-    }
+    registerConsoleCommands() { }
+
+    clientBound() { }
+
+    postInitialize() { }
+    
+    onReady() { }
 
 }

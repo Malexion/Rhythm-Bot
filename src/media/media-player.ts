@@ -1,74 +1,11 @@
-
-import { VoiceConnection, StreamDispatcher, TextChannel, DMChannel, NewsChannel } from 'discord.js';
+import { IRhythmBotConfig } from '../bot/bot-config';
+import { BotStatus } from '../bot/bot-status';
+import { MediaQueue } from './media-queue';
+import { MediaItem } from './media-item.model';
+import { IMediaType } from './media-type.model';
+import { createEmbed, createErrorEmbed, createInfoEmbed } from '../helpers';
+import { Logger, TextChannel, DMChannel, NewsChannel, VoiceConnection, StreamDispatcher } from 'discord-bot-quickstart';
 import { Readable } from 'stream';
-import { BotConfig } from './config';
-import { BotStatus } from './bot-status';
-import { logger } from './logger';
-import { createEmbed, createErrorEmbed, createInfoEmbed } from './helpers';
-
-export interface MediaItem {
-    type: string;
-    url: string;
-    requestor?: string;
-    name?: string;
-    duration?: string;
-}
-
-export interface IMediaType {
-    getDetails(item: MediaItem): Promise<MediaItem>;
-    getStream(item: MediaItem): Promise<Readable>;
-}
-
-export class MediaQueue extends Array<MediaItem> {
-
-    get first(): MediaItem {
-        return this[0];
-    }
-
-    get last(): MediaItem {
-        return this[this.length - 1];
-    }
-
-    enqueue(item: MediaItem): void {
-        this.push(item);
-    }
-
-    dequeue(item?: MediaItem): MediaItem {
-        if(item) {
-            let idx = this.indexOf(item);
-            if(idx > -1)
-                this.splice(idx, 1);
-            return item;
-        } else
-            return this.shift();
-    }
-
-    clear() {
-        this.length = 0;
-    }
-
-    shuffle() {
-        let currentIndex = this.length, 
-            temporaryValue, 
-            randomIndex;
-
-        while (0 !== currentIndex) {
-            randomIndex = Math.floor(Math.random() * currentIndex);
-            currentIndex -= 1;
-
-            temporaryValue = this[currentIndex];
-            this[currentIndex] = this[randomIndex];
-            this[randomIndex] = temporaryValue;
-        }
-    }
-
-    move(key1, key2) {
-        if(key1 != key2) {
-            this.splice(key2, 0, this.splice(key1, 1)[0]);
-        }
-    }
-
-}
 
 export class MediaPlayer {
     typeRegistry: Map<string, IMediaType> = new Map<string, IMediaType>();
@@ -76,15 +13,17 @@ export class MediaPlayer {
     playing: boolean = false;
     paused: boolean = false;
     stopping: boolean = false;
-    config: BotConfig;
+    config: IRhythmBotConfig;
     status: BotStatus;
+    logger: Logger;
     channel: TextChannel | DMChannel | NewsChannel;
     connection?: VoiceConnection;
     dispatcher?: StreamDispatcher;
 
-    constructor(config: BotConfig, status: BotStatus) {
+    constructor(config: IRhythmBotConfig, status: BotStatus, logger: Logger) {
         this.config = config;
         this.status = status;
+        this.logger = logger;
     }
 
     addMedia(item: MediaItem): Promise<void> {
@@ -173,18 +112,16 @@ export class MediaPlayer {
             }
         });
         this.dispatcher.on('debug', (info: string) => {
-            console.log(info);
-            logger.debug(info);
+            this.logger.debug(info);
         });
         this.dispatcher.on('error', err => {
             this.skip();
-            console.log(err);
-            logger.error(err);
+            this.logger.error(err);
             if(this.channel)
                 this.channel.send(createErrorEmbed(`Error Playing Song: ${err}`));
         });
         this.dispatcher.on('close', () => {
-            logger.debug(`Stream Closed`);
+            this.logger.debug(`Stream Closed`);
             if (this.dispatcher) {
                 this.playing = false;
                 this.dispatcher = null;
@@ -201,7 +138,7 @@ export class MediaPlayer {
             }
         });
         this.dispatcher.on('finish', () => {
-            logger.debug('Stream Finished');
+            this.logger.debug('Stream Finished');
             if (this.dispatcher) {
                 this.playing = false;
                 this.dispatcher = null;
@@ -218,7 +155,7 @@ export class MediaPlayer {
             }
         });
         this.dispatcher.on('end', (reason: string) => {
-            logger.debug(`Stream Ended: ${reason}`);
+            this.logger.debug(`Stream Ended: ${reason}`);
         });
     }
 

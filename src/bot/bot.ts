@@ -1,21 +1,11 @@
-
-import { parse, SuccessfulParsedMessage } from 'discord-command-parser';
-import { Client, Message, MessageEmbed, MessageReaction, User } from 'discord.js';
-import { ParsedArgs } from 'minimist';
-import { Interface } from 'readline';
-import * as yts from 'yt-search';
-import { readDir, readFile, requireFile } from '../directory';
-import { clone, fuse } from '../iteration/index';
-import { IBot, IBotPlugin } from './bot-interface';
+import { MediaPlayer } from '../media';
 import { BotStatus } from './bot-status';
-import { CommandMap } from './command-map';
-import { BotConfig, DefaultBotConfig } from './config';
-import { ConsoleReader } from './console-reader';
-import { joinUserChannel, secondsToTimestamp, createEmbed, createErrorEmbed, createInfoEmbed } from './helpers';
-import { logger } from './logger';
-import { MediaPlayer } from './media';
+import { IRhythmBotConfig } from './bot-config';
+import { joinUserChannel, createInfoEmbed, createErrorEmbed, secondsToTimestamp, createEmbed } from '../helpers';
+import { IBot, CommandMap, Client, ParsedArgs, Interface, SuccessfulParsedMessage, Message, readFile, MessageReaction, User } from 'discord-bot-quickstart';
+import * as yts from 'yt-search';
 
-const helptext = readFile('./helptext.txt');
+const helptext = readFile('../helptext.txt');
 const random = (array) => {
     return array[Math.floor(Math.random() * array.length)];
 };
@@ -24,23 +14,52 @@ const pingPhrases = [
     `:ping_pong: Pong Bitch!` 
 ];
 
-export class Bot implements IBot {
-    config: BotConfig;
-    client: Client;
-    status: BotStatus;
-    commands: CommandMap;
-    console: ConsoleReader;
-    player: MediaPlayer;
-    online: boolean;
+export class RhythmBot extends IBot<IRhythmBotConfig> {
     helptext: string;
-    plugins: IBotPlugin[];
+    player: MediaPlayer;
+    status: BotStatus;
 
-    constructor(config: BotConfig) {
+    constructor(config: IRhythmBotConfig) {
+        super(config, <IRhythmBotConfig>{
+            auto: {
+                deafen: false,
+                pause: false,
+                play: false,
+                reconnect: true
+            },
+            discord: {
+                log: true
+            },
+            command: {
+                symbol: '!'
+            },
+            directory: {
+                plugins: './plugins',
+                logs: '../bot.log'
+            },
+            queue: {
+                announce: true,
+                repeat: false
+            },
+            stream: {
+                seek: 0,
+                volume: 1,
+                bitrate: 'auto',
+                forwardErrorCorrection: false
+            },
+            emojis: {
+                addSong: '👍',
+                stopSong: '⏹️',
+                playSong: '▶️',
+                pauseSong: '⏸️',
+                skipSong: '⏭️'
+            }
+        });
         this.helptext = helptext;
-        this.online = false;
-        this.config = fuse(clone(DefaultBotConfig), config);
-        this.commands = new CommandMap()
-            .on('ping', (cmd: SuccessfulParsedMessage<Message>, msg: Message) => {
+    }
+
+    onRegisterDiscordCommands(map: CommandMap<(cmd: SuccessfulParsedMessage<Message>, msg: Message) => void>): void {
+        map.on('ping', (cmd: SuccessfulParsedMessage<Message>, msg: Message) => {
                 let phrases = pingPhrases.slice();
                 if(msg.guild)
                     phrases = phrases.concat(msg.guild.emojis.cache.array().map(x => x.name));
@@ -184,117 +203,66 @@ export class Bot implements IBot {
                 this.config.queue.repeat = !this.config.queue.repeat;
                 msg.channel.send(createInfoEmbed(`Repeat mode is ${this.config.queue.repeat ? 'on':'off'}`));
             });
+    }
 
-        this.client = new Client()
-            .on('message', (msg: Message) => {
-                let parsed = parse(msg, this.config.command.symbol);
-                if(!parsed.success) return;
-                let handlers = this.commands.get(parsed.command);
-                if(handlers) {
-                    logger.debug(`Bot Command: ${msg.content}`);
-                    // TODO make the player able to handle multiple channels
-                    this.player.channel = msg.channel;
-                    handlers.forEach(handle => {
-                        handle(parsed, msg);
-                    });
+    preMessage(msg: Message) {
+        this.player.channel = msg.channel;
+    }
+
+    onClientCreated(client: Client): void {
+        this.status = new BotStatus(client);
+        this.player = new MediaPlayer(this.config, this.status, this.logger);
+
+        client.on('messageReactionAdd', async (reaction: MessageReaction, user: User) => {
+            if (reaction.partial) {
+                try {
+                    await reaction.fetch();
+                } catch (error) {
+                    this.logger.debug(error);
+                    return;
                 }
-            })
-            .on('messageReactionAdd', async (reaction: MessageReaction, user: User) => {
-                if (reaction.partial) {
-                    try {
-                        await reaction.fetch();
-                    } catch (error) {
-                        console.log(error);
-                        logger.debug(error);
-                        return;
-                    }
-                }
-                if (reaction.message.author.id === this.client.user.id && user.id !== this.client.user.id) {
-                    if (reaction.message.embeds.length > 0) {
-                        const embed = reaction.message.embeds[0];
-                        if (embed) {
-                            if (reaction.emoji.name === this.config.emojis.addSong && embed.url) {
-                                logger.debug(`Emoji Click: Adding Media: ${embed.url}`);
-                                this.player.addMedia({ type: 'youtube', url: embed.url, requestor: user.username });
-                            }
-                            if (reaction.emoji.name === this.config.emojis.stopSong) {
-                                logger.debug('Emoji Click: Stopping Song');
-                                this.player.stop();
-                            }
-                            if (reaction.emoji.name === this.config.emojis.playSong) {
-                                logger.debug('Emoji Click: Playing/Resuming Song');
-                                this.player.play();
-                            }
-                            if (reaction.emoji.name === this.config.emojis.pauseSong) {
-                                logger.debug('Emoji Click: Pausing Song');
-                                this.player.pause();
-                            }
-                            if (reaction.emoji.name === this.config.emojis.skipSong) {
-                                logger.debug('Emoji Click: Skipping Song');
-                                this.player.skip();
-                            }
+            }
+            if (reaction.message.author.id === this.client.user.id && user.id !== this.client.user.id) {
+                if (reaction.message.embeds.length > 0) {
+                    const embed = reaction.message.embeds[0];
+                    if (embed) {
+                        if (reaction.emoji.name === this.config.emojis.addSong && embed.url) {
+                            this.logger.debug(`Emoji Click: Adding Media: ${embed.url}`);
+                            this.player.addMedia({ type: 'youtube', url: embed.url, requestor: user.username });
                         }
-                        reaction.users.remove(user.id);
+                        if (reaction.emoji.name === this.config.emojis.stopSong) {
+                            this.logger.debug('Emoji Click: Stopping Song');
+                            this.player.stop();
+                        }
+                        if (reaction.emoji.name === this.config.emojis.playSong) {
+                            this.logger.debug('Emoji Click: Playing/Resuming Song');
+                            this.player.play();
+                        }
+                        if (reaction.emoji.name === this.config.emojis.pauseSong) {
+                            this.logger.debug('Emoji Click: Pausing Song');
+                            this.player.pause();
+                        }
+                        if (reaction.emoji.name === this.config.emojis.skipSong) {
+                            this.logger.debug('Emoji Click: Skipping Song');
+                            this.player.skip();
+                        }
                     }
+                    reaction.users.remove(user.id);
                 }
-            })
-            .on('ready', () => {
-                if(this.online)
-                    logger.debug('Reconnected!');
-                else
-                    logger.debug('Rhythm Bot Online!');
-                this.online = true;
-                this.player.determineStatus();
-                console.log(`Guilds: ${this.client.guilds.cache.keyArray().length}`);
-                this.client.guilds.cache.forEach(guild => {
-                    console.log(`Guild Name: ${guild.name}`);
-                    const manageMessagesRole = guild.roles.cache.has('MANAGE_MESSAGES');
-                    console.log(`- Can Manage Messages: ${manageMessagesRole}`);
-                });
-            })
-            .on('disconnect', () => {
-                this.online = false;
-                logger.debug('Disconnected!');
-            })
-            .on('error', (error: Error) => {
-                logger.error(error);
-                console.log(error);
-            })
-            .on('guildMemberUpdate', () => {
-                
-            })
-            .on('guildMemberSpeaking', () => {
-                
-            });
-        
-        this.console = new ConsoleReader();
-        this.console.commands
-            .on('exit', (args: ParsedArgs, rl: Interface) => {
-                if(this.client)
-                    this.client.destroy();
-                rl.close();
-            });
-        
-        this.status = new BotStatus(this.client);
-        this.player = new MediaPlayer(this.config, this.status);
-
-        let files = readDir('./dist/plugins');
-        if(files) {
-            this.plugins = files
-                .filter(file => !file.endsWith('.map'))
-                .map(file => requireFile('./dist/plugins', file).default)
-                .map(construct => new construct());
-            this.plugins.forEach(plugin => plugin.preInitialize(this));
-            this.plugins.forEach(plugin => plugin.postInitialize(this));
-        }
+            }
+        })
     }
 
-    connect(): Promise<string> {
-        return this.client.login(this.config.discord.token);
+    onReady(client: Client): void {
+        this.player.determineStatus();
+        console.log(`Guilds: ${this.client.guilds.cache.keyArray().length}`);
+        this.client.guilds.cache.forEach(guild => {
+            console.log(`Guild Name: ${guild.name}`);
+            const manageMessagesRole = guild.roles.cache.has('MANAGE_MESSAGES');
+            console.log(`- Can Manage Messages: ${manageMessagesRole}`);
+        });
     }
 
-    listen() {
-        return this.console.listen();
-    }
-
+    onRegisterConsoleCommands(map: CommandMap<(args: ParsedArgs, rl: Interface) => void>): void { }
+    
 }

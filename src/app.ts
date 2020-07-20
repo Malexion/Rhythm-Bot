@@ -1,25 +1,25 @@
 import * as fs from 'fs';
-import { requireFile, writeJson, logger, BotConfig, Bot } from './resources';
+import { requireFile, projectDir, writeJson } from 'discord-bot-quickstart';
+import { IRhythmBotConfig, RhythmBot } from './bot';
 
-process.on('unhandledRejection', error => logger.error('Uncaught Promise Rejection', error));
-
-if (!fs.existsSync('./bot-config.json')) {
-    writeJson({ discord: { token: '<BOT-TOKEN>' } }, './bot-config.json');
+const configPath = projectDir('../bot-config.json');
+if (!fs.existsSync(configPath)) {
+    writeJson({ discord: { token: '<BOT-TOKEN>' } }, configPath);
 }
-let config: BotConfig = requireFile('./bot-config.json');
+
+let config: IRhythmBotConfig = requireFile('../bot-config.json');
+
+const bot = new RhythmBot(config);
 
 if (!!config && config.discord.token === '<BOT-TOKEN>') {
-    logger.debug('Invalid Token - Create valid token in the Discord Developer Portal');
+    bot.logger.debug('Invalid Token - Create valid token in the Discord Developer Portal');
     console.log('Invalid Token - Create valid token in the Discord Developer Portal');
     process.exit(0);
 }
 
-let bot = new Bot(config);
-
 bot.connect()
     .then(() => {
-        logger.debug('Bot Ready');
-        console.log('Bot Online');
+        bot.logger.debug('Rhythm Bot Online');
         bot.listen();
     })
-    .catch(err => logger.error(err));
+    .catch(err => bot.logger.error(err));

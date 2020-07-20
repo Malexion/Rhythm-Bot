@@ -18,6 +18,7 @@
     "@types/winston": "^2.4.4",
     "@types/yt-search": "^2.0.0",
     "bufferutil": "^4.0.1",
+    "discord-bot-quickstart": "0.0.12",
     "discord-command-parser": "^1.4.3",
     "discord.js": "^12.2.0",
     "erlpack": "^0.1.3",
