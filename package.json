@@ -30,7 +30,7 @@
     "typescript": "^3.9.6",
     "utf-8-validate": "^5.0.2",
     "winston": "^3.3.3",
-    "yt-search": "^2.1.1",
+    "yt-search": "^2.2.0",
     "ytdl-core": "^3.1.2",
     "zlib-sync": "^0.1.7"
   }
