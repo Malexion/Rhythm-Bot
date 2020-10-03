@@ -205,8 +205,11 @@ export class RhythmBot extends IBot<IRhythmBotConfig> {
             });
     }
 
-    preMessage(msg: Message) {
-        this.player.channel = msg.channel;
+    parsedMessage(msg: SuccessfulParsedMessage<Message>) {
+        const handlers = this.commands.get(msg.command);
+        if (handlers) {
+            this.player.channel = msg.message.channel;
+        }
     }
 
     onClientCreated(client: Client): void {
