@@ -1,14 +1,25 @@
+import * as fs from 'fs';
+import { requireFile, projectDir, writeJson } from 'discord-bot-quickstart';
+import { IRhythmBotConfig, RhythmBot } from './bot';
 
-import { requireFile, logger, BotConfig, Bot } from './resources';
+const configPath = projectDir('../bot-config.json');
+if (!fs.existsSync(configPath)) {
+    writeJson({ discord: { token: '<BOT-TOKEN>' } }, configPath);
+}
 
-let config: BotConfig = requireFile('./bot-config.json');
+let config: IRhythmBotConfig = requireFile('../bot-config.json');
 
-let bot = new Bot(config);
+const bot = new RhythmBot(config);
+
+if (!!config && config.discord.token === '<BOT-TOKEN>') {
+    bot.logger.debug('Invalid Token - Create valid token in the Discord Developer Portal');
+    console.log('Invalid Token - Create valid token in the Discord Developer Portal');
+    process.exit(0);
+}
 
 bot.connect()
     .then(() => {
-        logger.debug('Bot Ready');
-        console.log('Bot Online');
+        bot.logger.debug('Rhythm Bot Online');
         bot.listen();
     })
-    .catch(err => logger.error(err));
+    .catch(err => bot.logger.error(err));

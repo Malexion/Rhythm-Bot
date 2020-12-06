@@ -1,6 +1,6 @@
 {
   "name": "rhythm-bot",
-  "version": "2.0.0",
+  "version": "2.1.5",
   "description": "",
   "main": "dist/app.js",
   "scripts": {
@@ -11,6 +11,7 @@
   "license": "ISC",
   "dependencies": {
     "@discordjs/opus": "^0.3.2",
+<<<<<<< HEAD
     "@types/jsonfile": "^6.0.0",
     "@types/node": "^14.0.20",
     "dayjs": "^1.8.29",
@@ -23,5 +24,29 @@
     "typescript": "^3.9.6",
     "winston": "^3.3.3",
     "ytdl-core": "^3.1.2"
+=======
+    "@types/jsonfile": "^5.0.1",
+    "@types/minimist": "^1.2.0",
+    "@types/moment": "^2.13.0",
+    "@types/node": "^12.12.48",
+    "@types/winston": "^2.4.4",
+    "@types/yt-search": "^2.0.0",
+    "bufferutil": "^4.0.1",
+    "discord-bot-quickstart": "0.0.12",
+    "discord-command-parser": "^1.4.3",
+    "discord.js": "^12.2.0",
+    "erlpack": "^0.1.3",
+    "ffmpeg-static": "^4.2.5",
+    "jsonfile": "^2.4.0",
+    "minimist": "^1.2.3",
+    "moment": "^2.27.0",
+    "sodium": "^3.0.2",
+    "typescript": "^3.9.6",
+    "utf-8-validate": "^5.0.2",
+    "winston": "^3.3.3",
+    "yt-search": "^2.2.0",
+    "ytdl-core": "^3.1.2",
+    "zlib-sync": "^0.1.7"
+>>>>>>> 6d089bc2b81420a59a7bf801b56fe14884a28ad5
   }
 }
