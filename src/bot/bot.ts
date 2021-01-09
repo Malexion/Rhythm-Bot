@@ -89,7 +89,7 @@ export class RhythmBot extends IBot<IRhythmBotConfig> {
                 });
             })
             .on('play', (cmd: SuccessfulParsedMessage<Message>, msg: Message) => {
-                new Promise(done => {
+                new Promise<void>(done => {
                     if(!this.player.connection) {
                         joinUserChannel(msg)
                             .then(conn => {

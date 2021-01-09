@@ -30,12 +30,12 @@ export class MediaPlayer {
         return new Promise((done, error) => {
             let type = this.typeRegistry.get(item.type);
             if(type) {
-                this.queue.enqueue(item);
                 type.getDetails(item)
                     .then((media) => {
                         item.name = media.name;
                         item.duration = media.duration;
                         this.determineStatus();
+                        this.queue.enqueue(item);
                         done(item);
                     })
                     .catch(err => error(err));
