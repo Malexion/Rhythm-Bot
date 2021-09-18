@@ -2,7 +2,9 @@ import { IRhythmBotConfig, RhythmBot } from '../bot';
 import { MediaItem } from '../media';
 import { secondsToTimestamp } from '../helpers';
 import { IBotPlugin, IBot, SuccessfulParsedMessage, Message, CommandMap, Client, IBotConfig } from 'discord-bot-quickstart';
+import { Readable } from 'stream';
 import * as ytdl from 'ytdl-core';
+import * as ytpl from 'ytpl';
 
 const youtubeType: string = 'youtube';
 
@@ -26,9 +28,17 @@ export default class YoutubePlugin extends IBotPlugin {
         this.bot.player.typeRegistry.set(
             youtubeType,
             {
-                getDetails: (item: MediaItem) => new Promise((done, error) => {
+                getPlaylist: (item: MediaItem) => new Promise<MediaItem[]>((done, error) => {
+                    ytpl(item.url)
+                        .then(playlist => {
+                            const items = playlist.items.map(item => (<MediaItem>{ type: youtubeType, url: item.url, name: item.title }))
+                            done(items);
+                        })
+                        .catch(err => error(err));
+                }),
+                getDetails: (item: MediaItem) => new Promise<MediaItem>((done, error) => {
                     item.url = item.url.includes('://') ? item.url : `https://www.youtube.com/watch?v=${item.url}`;
-                    let result = ytdl.getInfo(item.url)
+                    ytdl.getInfo(item.url)
                         .then(info => {
                             item.name = info.videoDetails.title ? info.videoDetails.title : 'Unknown';
                             item.duration = secondsToTimestamp(parseInt(info.videoDetails.lengthSeconds) || 0);
@@ -36,7 +46,7 @@ export default class YoutubePlugin extends IBotPlugin {
                         })
                         .catch(err => error(err));
                 }),
-                getStream: (item: MediaItem) => new Promise((done, error) => {
+                getStream: (item: MediaItem) => new Promise<Readable>((done, error) => {
                     let stream = ytdl(item.url, { filter: 'audioonly', quality: 'highestaudio' });
                     if(stream)
                         done(stream);
