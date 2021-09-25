@@ -4,11 +4,10 @@ Commands:
 `help` - Get the help text
 `join` - Join user voice channel
 `leave` - Leave voice channel
-`play` - Play the first song in the queue
+`play [youtube url]` - Add a video to the queue. If it's the only video in the queue it will play it.
 `pause` - Pause the current song
 `resume` - Resume the current song
 `time` - Time of the current song
-`add [type] [url/idfragment]` - Add a song to the end of the queue
 `remove [index]` - Remove song at index
 `skip` - Skip the current song
 `stop` - Stop the current song and reset to the beginning

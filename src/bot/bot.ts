@@ -99,7 +99,17 @@ export class RhythmBot extends IBot<IRhythmBotConfig> {
                             });
                     } else
                         done();
-                }).then(() => {
+                }).then(async () => {
+                    if(cmd.arguments.length > 0) {
+                        for(const url of cmd.arguments) {
+                            if(url.includes('www.youtube.com') || url.includes('youtu.be')) {
+                                await this.player.addMedia({ type: 'youtube', url: url, requestor: msg.author.username });
+                            } else {
+                                msg.channel.send(createErrorEmbed(`Video url must be from YouTube`));
+                                return;
+                            }
+                        }
+                    }
                     this.player.play();
                 });
             })
@@ -134,17 +144,16 @@ export class RhythmBot extends IBot<IRhythmBotConfig> {
                         });
                 });
             })
-            .on('add', (cmd: SuccessfulParsedMessage<Message>, msg: Message) => {
-                if(cmd.arguments.length > 0) {
-                    cmd.arguments.forEach(arg => {
-                        let parts = arg.split(':');
-                        if(parts.length == 2) {
-                            this.player.addMedia({ type: parts[0], url: parts[1], requestor: msg.author.username });
-                        } else
-                            msg.channel.send(createErrorEmbed(`Invalid media type format`));
-                    });
-                }
-            })
+            // .on('add', (cmd: SuccessfulParsedMessage<Message>, msg: Message) => {
+            //     if(cmd.arguments.length > 0) {
+            //         cmd.arguments.forEach(url => {
+            //             if(url.includes('www.youtube.com') || url.includes('youtu.be')) {
+            //                 this.player.addMedia({ type: 'youtube', url: url, requestor: msg.author.username });
+            //             } else
+            //                 msg.channel.send(createErrorEmbed(`Video url must be from YouTube`));
+            //         });
+            //     }
+            // })
             .on('remove', (cmd: SuccessfulParsedMessage<Message>, msg: Message) => {
                 if(cmd.arguments.length > 0) {
                     let idx = parseInt(cmd.arguments[0]);
