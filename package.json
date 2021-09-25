@@ -4,7 +4,7 @@
   "description": "",
   "main": "dist/app.js",
   "scripts": {
-    "start:prod": "npm run build && node dist/app",
+    "start": "npm run build && node dist/app",
     "start:dev": "nodemon src/app",
     "build": "tsc"
   },
