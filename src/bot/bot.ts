@@ -100,17 +100,30 @@ export class RhythmBot extends IBot<IRhythmBotConfig> {
                     } else
                         done();
                 }).then(async () => {
-                    if(cmd.arguments.length > 0) {
-                        for(const url of cmd.arguments) {
-                            if(url.includes('www.youtube.com') || url.includes('youtu.be')) {
-                                await this.player.addMedia({ type: 'youtube', url: url, requestor: msg.author.username });
+                    const query = cmd.body;
+                    if(query) {
+                        const isUrl = query.startsWith('https://');
+                        if(isUrl){
+                            if(query.includes('www.youtube.com') || query.includes('youtu.be')) {
+                                await this.player.addMedia({ type: 'youtube', url: query, requestor: msg.author.username });
+                                this.player.play();
                             } else {
                                 msg.channel.send(createErrorEmbed(`Video url must be from YouTube`));
-                                return;
                             }
+                        } else{
+                            yts({
+                                query,
+                                pages: 1
+                            }, (err, result) => {
+                                result.videos
+                                    .slice(0, 1)
+                                    .forEach(async (v, idx) => {
+                                       await this.player.addMedia({ type: 'youtube', url: v.url, requestor: msg.author.username });
+                                       this.player.play();
+                                });
+                            });
                         }
                     }
-                    this.player.play();
                 });
             })
             .on('pause', (cmd: SuccessfulParsedMessage<Message>, msg: Message) => {

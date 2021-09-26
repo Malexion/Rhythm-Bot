@@ -2,7 +2,6 @@
   "name": "rhythm-bot",
   "version": "2.1.5",
   "description": "",
-  "main": "dist/app.js",
   "scripts": {
     "start": "npm run build && node dist/app",
     "start:dev": "nodemon src/app",
@@ -28,14 +27,17 @@
     "jsonfile": "^2.4.0",
     "minimist": "^1.2.3",
     "moment": "^2.27.0",
+    "node-gyp": "^8.2.0",
+    "node-opus": "^0.3.3",
     "nodemon": "^2.0.13",
+    "rebuild": "^0.1.2",
     "sodium": "^3.0.2",
     "ts-node": "^10.2.1",
     "typescript": "^3.9.6",
     "utf-8-validate": "^5.0.2",
     "winston": "^3.3.3",
     "yt-search": "^2.5.1",
-    "ytdl-core": "^4.4.1",
+    "ytdl-core": "^4.9.1",
     "ytpl": "^2.0.4",
     "zlib-sync": "^0.1.7"
   }
