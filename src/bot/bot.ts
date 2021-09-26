@@ -124,6 +124,7 @@ export class RhythmBot extends IBot<IRhythmBotConfig> {
                             });
                         }
                     }
+                    this.player.play();
                 });
             })
             .on('pause', (cmd: SuccessfulParsedMessage<Message>, msg: Message) => {
