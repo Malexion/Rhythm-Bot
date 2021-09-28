@@ -33,6 +33,10 @@ export default class YoutubePlugin extends IBotPlugin {
                         url: arg,
                         requestor: msg.author.username,
                     });
+
+                    if (!this.bot.player.playing) {
+                        this.bot.joinChannelAndPlay(msg);
+                    }
                 });
             }
         });

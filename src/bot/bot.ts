@@ -95,17 +95,7 @@ export class RhythmBot extends IBot<IRhythmBotConfig> {
                 });
             })
             .on('play', (cmd: SuccessfulParsedMessage<Message>, msg: Message) => {
-                new Promise<void>((done) => {
-                    if (!this.player.connection) {
-                        joinUserChannel(msg).then((conn) => {
-                            this.player.connection = conn;
-                            msg.channel.send(createInfoEmbed(`Joined Channel: ${conn.channel.name}`));
-                            done();
-                        });
-                    } else done();
-                }).then(() => {
-                    this.player.play();
-                });
+                this.joinChannelAndPlay(msg);
             })
             .on('pause', (cmd: SuccessfulParsedMessage<Message>, msg: Message) => {
                 this.player.pause();
@@ -138,18 +128,22 @@ export class RhythmBot extends IBot<IRhythmBotConfig> {
                     }
                 );
             })
-            .on('add', (cmd: SuccessfulParsedMessage<Message>, msg: Message) => {
+            .on('add', async (cmd: SuccessfulParsedMessage<Message>, msg: Message) => {
                 if (cmd.arguments.length > 0) {
-                    cmd.arguments.forEach((arg) => {
+                    for (const arg in cmd.arguments) {
                         let parts = arg.split(':');
                         if (parts.length == 2) {
-                            this.player.addMedia({
+                            await this.player.addMedia({
                                 type: parts[0],
                                 url: parts[1],
                                 requestor: msg.author.username,
                             });
                         } else msg.channel.send(createErrorEmbed(`Invalid media type format`));
-                    });
+                    }
+
+                    if (this.player.queue.length > 0 && !this.player.playing) {
+                        this.joinChannelAndPlay(msg);
+                    }
                 }
             })
             .on('remove', (cmd: SuccessfulParsedMessage<Message>, msg: Message) => {
@@ -285,4 +279,18 @@ export class RhythmBot extends IBot<IRhythmBotConfig> {
     }
 
     onRegisterConsoleCommands(map: CommandMap<(args: ParsedArgs, rl: Interface) => void>): void {}
+
+    joinChannelAndPlay(msg: Message) {
+        new Promise<void>((done) => {
+            if (!this.player.connection) {
+                joinUserChannel(msg).then((conn) => {
+                    this.player.connection = conn;
+                    msg.channel.send(createInfoEmbed(`Joined Channel: ${conn.channel.name}`));
+                    done();
+                });
+            } else done();
+        }).then(() => {
+            this.player.play();
+        });
+    }
 }
