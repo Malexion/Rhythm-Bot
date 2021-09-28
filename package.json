@@ -10,13 +10,6 @@
   "author": "Malexion",
   "license": "ISC",
   "dependencies": {
-    "@discordjs/opus": "^0.3.3",
-    "@types/jsonfile": "^5.0.1",
-    "@types/minimist": "^1.2.0",
-    "@types/moment": "^2.13.0",
-    "@types/node": "^12.12.48",
-    "@types/winston": "^2.4.4",
-    "@types/yt-search": "^2.3.0",
     "bufferutil": "^4.0.1",
     "discord-bot-quickstart": "0.0.15",
     "discord-command-parser": "^1.5.3",
@@ -27,7 +20,6 @@
     "minimist": "^1.2.3",
     "moment": "^2.27.0",
     "sodium": "^3.0.2",
-    "typescript": "^3.9.6",
     "utf-8-validate": "^5.0.2",
     "winston": "^3.3.3",
     "yt-search": "^2.5.1",
@@ -36,6 +28,13 @@
     "zlib-sync": "^0.1.7"
   },
   "devDependencies": {
+    "@types/jsonfile": "^5.0.1",
+    "@types/minimist": "^1.2.0",
+    "@types/moment": "^2.13.0",
+    "@types/node": "^12.12.48",
+    "@types/winston": "^2.4.4",
+    "@types/yt-search": "^2.3.0",
     "prettier": "^2.4.1",
+    "typescript": "^3.9.6",
   }
 }
