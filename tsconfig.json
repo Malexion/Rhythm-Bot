@@ -2,7 +2,11 @@
     "compilerOptions": {
         "target": "es6",
         "module": "commonjs",
+        "lib": ["ES2019"],
         "outDir": "dist",
+        "baseUrl": "./",
+        "incremental": true,
+        "resolveJsonModule": true,
         "sourceMap": true
     },
     "include": ["src/**/*.ts"],
