@@ -6,38 +6,45 @@ import { IRhythmBotConfig, RhythmBot } from './bot';
 
 dotenv();
 
-let config: IRhythmBotConfig;
+(async () => {
+    try {
+        let config: IRhythmBotConfig;
 
-if (process.env.DISCORD_TOKEN == null) {
-    const configPath = projectDir('../bot-config.json');
-    if (!fs.existsSync(configPath)) {
-        writeJson({ discord: { token: '<BOT-TOKEN>' } }, configPath);
+        if (process.env.DISCORD_TOKEN == null) {
+            const configPath = projectDir('../bot-config.json');
+            if (!fs.existsSync(configPath)) {
+                await writeJson(
+                    { discord: { token: '<BOT-TOKEN>' } },
+                    configPath
+                );
+            }
+            requireFile(configPath);
+        } else {
+            config = readConfigFromEnv();
+        }
+
+        console.log(config);
+
+        const bot = new RhythmBot(config);
+
+        if (!!config && config.discord.token === '<BOT-TOKEN>') {
+            bot.logger.debug(
+                'Invalid Token - Create valid token in the Discord Developer Portal'
+            );
+            console.log(
+                'Invalid Token - Create valid token in the Discord Developer Portal'
+            );
+            process.exit(0);
+        }
+
+        bot.connect().then(() => {
+            bot.logger.debug('Rhythm Bot Online');
+            bot.listen();
+        });
+    } catch (error) {
+        console.error(error);
     }
-    requireFile(configPath);
-} else {
-    config = readConfigFromEnv();
-}
-
-console.log(config);
-
-const bot = new RhythmBot(config);
-
-if (!!config && config.discord.token === '<BOT-TOKEN>') {
-    bot.logger.debug(
-        'Invalid Token - Create valid token in the Discord Developer Portal'
-    );
-    console.log(
-        'Invalid Token - Create valid token in the Discord Developer Portal'
-    );
-    process.exit(0);
-}
-
-bot.connect()
-    .then(() => {
-        bot.logger.debug('Rhythm Bot Online');
-        bot.listen();
-    })
-    .catch((err) => bot.logger.error(err));
+})();
 
 function readConfigFromEnv(): IRhythmBotConfig {
     const config: IRhythmBotConfig = {} as any;
