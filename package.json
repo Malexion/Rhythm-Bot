@@ -14,6 +14,7 @@
     "discord-bot-quickstart": "0.0.15",
     "discord-command-parser": "^1.5.3",
     "discord.js": "^12.5.1",
+    "dotenv": "^10.0.0",
     "erlpack": "^0.1.3",
     "ffmpeg-static": "^4.2.7",
     "jsonfile": "^2.4.0",
