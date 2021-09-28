@@ -260,9 +260,17 @@ export class RhythmBot extends IBot<IRhythmBotConfig> {
         this.player.determineStatus();
         console.log(`Guilds: ${this.client.guilds.cache.keyArray().length}`);
         this.client.guilds.cache.forEach(guild => {
-            console.log(`Guild Name: ${guild.name}`);
-            const manageMessagesRole = guild.roles.cache.has('MANAGE_MESSAGES');
-            console.log(`- Can Manage Messages: ${manageMessagesRole}`);
+            console.log(`\nGuild Name: ${guild.name}`);
+            
+            const channels = guild.channels.cache
+                .filter(x => x.isText() && x.permissionsFor(this.client.user).has('MANAGE_MESSAGES'))
+                .map(x => x.name);
+            
+            if (channels && channels.length > 0) {
+                console.log(`Can manage message in these channels \n${channels.join('\n')}`);
+            } else {
+                console.log('Unable to manage messages on this guild');
+            }
         });
     }
 
