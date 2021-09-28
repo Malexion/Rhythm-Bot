@@ -13,10 +13,7 @@ dotenv();
         if (process.env.DISCORD_TOKEN == null) {
             const configPath = projectDir('../bot-config.json');
             if (!fs.existsSync(configPath)) {
-                await writeJson(
-                    { discord: { token: '<BOT-TOKEN>' } },
-                    configPath
-                );
+                await writeJson({ discord: { token: '<BOT-TOKEN>' } }, configPath);
             }
             requireFile(configPath);
         } else {
@@ -28,12 +25,8 @@ dotenv();
         const bot = new RhythmBot(config);
 
         if (!!config && config.discord.token === '<BOT-TOKEN>') {
-            bot.logger.debug(
-                'Invalid Token - Create valid token in the Discord Developer Portal'
-            );
-            console.log(
-                'Invalid Token - Create valid token in the Discord Developer Portal'
-            );
+            bot.logger.debug('Invalid Token - Create valid token in the Discord Developer Portal');
+            console.log('Invalid Token - Create valid token in the Discord Developer Portal');
             process.exit(0);
         }
 
@@ -104,15 +97,11 @@ function readConfigFromEnv(): IRhythmBotConfig {
     }
     if (process.env.STREAM_PACKET_LOSS_PERCENTAGE != null) {
         config.stream = config.stream ?? ({} as any);
-        config.stream.packetLossPercentage = parseFloat(
-            process.env.STREAM_PACKET_LOSS_PERCENTAGE
-        );
+        config.stream.packetLossPercentage = parseFloat(process.env.STREAM_PACKET_LOSS_PERCENTAGE);
     }
     if (process.env.STREAM_FORWARD_ERROR_CORRECTION != null) {
         config.stream = config.stream ?? ({} as any);
-        config.stream.forwardErrorCorrection = /true/i.test(
-            process.env.STREAM_FORWARD_ERROR_CORRECTION
-        );
+        config.stream.forwardErrorCorrection = /true/i.test(process.env.STREAM_FORWARD_ERROR_CORRECTION);
     }
     if (process.env.STREAM_VOLUME != null) {
         config.stream = config.stream ?? ({} as any);

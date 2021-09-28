@@ -4,14 +4,7 @@ import { MediaQueue } from './media-queue';
 import { MediaItem } from './media-item.model';
 import { IMediaType } from './media-type.model';
 import { createEmbed, createErrorEmbed, createInfoEmbed } from '../helpers';
-import {
-    Logger,
-    TextChannel,
-    DMChannel,
-    NewsChannel,
-    VoiceConnection,
-    StreamDispatcher,
-} from 'discord-bot-quickstart';
+import { Logger, TextChannel, DMChannel, NewsChannel, VoiceConnection, StreamDispatcher } from 'discord-bot-quickstart';
 import { Readable } from 'stream';
 
 export class MediaPlayer {
@@ -69,10 +62,7 @@ export class MediaPlayer {
                     );
             })
             .catch((err) => {
-                if (this.channel)
-                    this.channel.send(
-                        createErrorEmbed(`Error adding track: ${err}`)
-                    );
+                if (this.channel) this.channel.send(createErrorEmbed(`Error adding track: ${err}`));
             });
     }
 
@@ -81,20 +71,17 @@ export class MediaPlayer {
     }
 
     remove(item: MediaItem) {
-        if (item == this.queue.first && (this.playing || this.paused))
-            this.stop();
+        if (item == this.queue.first && (this.playing || this.paused)) this.stop();
         this.queue.dequeue(item);
         this.determineStatus();
-        if (this.channel)
-            this.channel.send(createInfoEmbed(`Track Removed`, `${item.name}`));
+        if (this.channel) this.channel.send(createInfoEmbed(`Track Removed`, `${item.name}`));
     }
 
     clear() {
         if (this.playing || this.paused) this.stop();
         this.queue.clear();
         this.determineStatus();
-        if (this.channel)
-            this.channel.send(createInfoEmbed(`Playlist Cleared`));
+        if (this.channel) this.channel.send(createInfoEmbed(`Playlist Cleared`));
     }
 
     dispatchStream(stream: Readable, item: MediaItem) {
@@ -132,10 +119,7 @@ export class MediaPlayer {
         this.dispatcher.on('error', (err) => {
             this.skip();
             this.logger.error(err);
-            if (this.channel)
-                this.channel.send(
-                    createErrorEmbed(`Error Playing Song: ${err}`)
-                );
+            if (this.channel) this.channel.send(createErrorEmbed(`Error Playing Song: ${err}`));
         });
         this.dispatcher.on('close', () => {
             this.logger.debug(`Stream Closed`);
@@ -176,11 +160,8 @@ export class MediaPlayer {
 
     play() {
         if (this.queue.length == 0 && this.channel)
-            this.channel.send(
-                createInfoEmbed(`Queue is empty! Add some songs!`)
-            );
-        if (this.playing && !this.paused)
-            this.channel.send(createInfoEmbed(`Already playing a song!`));
+            this.channel.send(createInfoEmbed(`Queue is empty! Add some songs!`));
+        if (this.playing && !this.paused) this.channel.send(createInfoEmbed(`Already playing a song!`));
         let item = this.queue.first;
         if (item && this.connection) {
             let type = this.typeRegistry.get(item.type);
@@ -193,12 +174,7 @@ export class MediaPlayer {
                     this.dispatcher.resume();
                     this.paused = false;
                     this.determineStatus();
-                    if (this.channel)
-                        this.channel.send(
-                            createInfoEmbed(
-                                `⏯️ "${this.queue.first.name}" resumed`
-                            )
-                        );
+                    if (this.channel) this.channel.send(createInfoEmbed(`⏯️ "${this.queue.first.name}" resumed`));
                 }
             }
         }
@@ -213,8 +189,7 @@ export class MediaPlayer {
             this.dispatcher.pause();
             this.dispatcher.destroy();
             this.determineStatus();
-            if (this.channel)
-                this.channel.send(createInfoEmbed(`⏹️ "${item.name}" stopped`));
+            if (this.channel) this.channel.send(createInfoEmbed(`⏹️ "${item.name}" stopped`));
         }
     }
 
@@ -224,13 +199,11 @@ export class MediaPlayer {
             this.paused = false;
             this.dispatcher.pause();
             this.dispatcher.destroy();
-            if (this.channel)
-                this.channel.send(createInfoEmbed(`⏭️ "${item.name}" skipped`));
+            if (this.channel) this.channel.send(createInfoEmbed(`⏭️ "${item.name}" skipped`));
         } else if (this.queue.length > 0) {
             let item = this.queue.first;
             this.queue.dequeue();
-            if (this.channel)
-                this.channel.send(createInfoEmbed(`⏭️ "${item.name}" skipped`));
+            if (this.channel) this.channel.send(createInfoEmbed(`⏭️ "${item.name}" skipped`));
         }
         this.determineStatus();
     }
@@ -240,10 +213,7 @@ export class MediaPlayer {
             this.dispatcher.pause();
             this.paused = true;
             this.determineStatus();
-            if (this.channel)
-                this.channel.send(
-                    createInfoEmbed(`⏸️ "${this.queue.first.name}" paused`)
-                );
+            if (this.channel) this.channel.send(createInfoEmbed(`⏸️ "${this.queue.first.name}" paused`));
         }
     }
 
@@ -251,8 +221,7 @@ export class MediaPlayer {
         if (this.playing || this.paused) this.stop();
         this.queue.shuffle();
         this.determineStatus();
-        if (this.channel)
-            this.channel.send(createInfoEmbed(`🔀 Queue Shuffled`));
+        if (this.channel) this.channel.send(createInfoEmbed(`🔀 Queue Shuffled`));
     }
 
     move(currentIdx: number, targetIdx: number) {
@@ -284,24 +253,15 @@ export class MediaPlayer {
         if (item) {
             if (this.playing) {
                 if (this.paused) {
-                    this.status.setBanner(
-                        `Paused: "${item.name}" Requested by: ${item.requestor}`
-                    );
+                    this.status.setBanner(`Paused: "${item.name}" Requested by: ${item.requestor}`);
                 } else {
                     this.status.setBanner(
-                        `Now Playing: "${item.name}" Requested by: ${
-                            item.requestor
-                        }${
-                            this.queue.length > 1
-                                ? `, Up Next "${this.queue[1].name}"`
-                                : ''
+                        `Now Playing: "${item.name}" Requested by: ${item.requestor}${
+                            this.queue.length > 1 ? `, Up Next "${this.queue[1].name}"` : ''
                         }`
                     );
                 }
-            } else
-                this.status.setBanner(
-                    `Up Next: "${item.name}" Requested by: ${item.requestor}`
-                );
+            } else this.status.setBanner(`Up Next: "${item.name}" Requested by: ${item.requestor}`);
         } else this.status.setBanner(`No Songs In Queue`);
     }
 }

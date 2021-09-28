@@ -21,15 +21,9 @@ export function createEmbed() {
 }
 
 export function createErrorEmbed(message: string) {
-    return new MessageEmbed()
-        .setColor('#ff3300')
-        .setTitle('Error')
-        .setDescription(message);
+    return new MessageEmbed().setColor('#ff3300').setTitle('Error').setDescription(message);
 }
 
 export function createInfoEmbed(title: string, message: string = '') {
-    return new MessageEmbed()
-        .setColor('#0099ff')
-        .setTitle(title)
-        .setDescription(message);
+    return new MessageEmbed().setColor('#0099ff').setTitle(title).setDescription(message);
 }

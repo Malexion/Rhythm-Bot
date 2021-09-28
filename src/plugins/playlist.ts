@@ -28,30 +28,23 @@ export default class PlaylistPlugin extends IBotPlugin {
         this.bot = bot as RhythmBot;
     }
 
-    registerDiscordCommands(
-        map: CommandMap<
-            (cmd: SuccessfulParsedMessage<Message>, msg: Message) => void
-        >
-    ) {
-        map.on(
-            'playlist',
-            (cmd: SuccessfulParsedMessage<Message>, msg: Message) => {
-                switch (cmd.arguments[0]) {
-                    case 'load':
-                        this.load(cmd, msg);
-                        break;
-                    case 'save':
-                        this.save(cmd, msg);
-                        break;
-                    case 'delete':
-                        this.delete(cmd, msg);
-                        break;
-                    default:
-                        this.list(cmd, msg);
-                        break;
-                }
+    registerDiscordCommands(map: CommandMap<(cmd: SuccessfulParsedMessage<Message>, msg: Message) => void>) {
+        map.on('playlist', (cmd: SuccessfulParsedMessage<Message>, msg: Message) => {
+            switch (cmd.arguments[0]) {
+                case 'load':
+                    this.load(cmd, msg);
+                    break;
+                case 'save':
+                    this.save(cmd, msg);
+                    break;
+                case 'delete':
+                    this.delete(cmd, msg);
+                    break;
+                default:
+                    this.list(cmd, msg);
+                    break;
             }
-        );
+        });
     }
 
     list(cmd: SuccessfulParsedMessage<Message>, msg: Message) {
@@ -59,12 +52,7 @@ export default class PlaylistPlugin extends IBotPlugin {
             .filter((file) => file.includes('.json'))
             .map((file, i) => `${i + 1}. ${file.replace('.json', '')}`);
 
-        msg.channel.send(
-            createInfoEmbed(
-                `Playlists`,
-                `${files.length == 0 ? 'No Playlists' : files.join('\n')}`
-            )
-        );
+        msg.channel.send(createInfoEmbed(`Playlists`, `${files.length == 0 ? 'No Playlists' : files.join('\n')}`));
     }
 
     load(cmd: SuccessfulParsedMessage<Message>, msg: Message) {

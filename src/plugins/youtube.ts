@@ -21,29 +21,21 @@ export default class YoutubePlugin extends IBotPlugin {
 
     preInitialize(bot: IBot<IRhythmBotConfig>): void {
         this.bot = bot as RhythmBot;
-        this.bot.helptext +=
-            '\n`youtube [url/idfragment]` - Add youtube audio to the queue\n';
+        this.bot.helptext += '\n`youtube [url/idfragment]` - Add youtube audio to the queue\n';
     }
 
-    registerDiscordCommands(
-        map: CommandMap<
-            (cmd: SuccessfulParsedMessage<Message>, msg: Message) => void
-        >
-    ) {
-        map.on(
-            youtubeType,
-            (cmd: SuccessfulParsedMessage<Message>, msg: Message) => {
-                if (cmd.arguments.length > 0) {
-                    cmd.arguments.forEach((arg) => {
-                        this.bot.player.addMedia({
-                            type: youtubeType,
-                            url: arg,
-                            requestor: msg.author.username,
-                        });
+    registerDiscordCommands(map: CommandMap<(cmd: SuccessfulParsedMessage<Message>, msg: Message) => void>) {
+        map.on(youtubeType, (cmd: SuccessfulParsedMessage<Message>, msg: Message) => {
+            if (cmd.arguments.length > 0) {
+                cmd.arguments.forEach((arg) => {
+                    this.bot.player.addMedia({
+                        type: youtubeType,
+                        url: arg,
+                        requestor: msg.author.username,
                     });
-                }
+                });
             }
-        );
+        });
 
         this.bot.player.typeRegistry.set(youtubeType, {
             getPlaylist: (item: MediaItem) =>
@@ -64,17 +56,11 @@ export default class YoutubePlugin extends IBotPlugin {
                 }),
             getDetails: (item: MediaItem) =>
                 new Promise<MediaItem>((done, error) => {
-                    item.url = item.url.includes('://')
-                        ? item.url
-                        : `https://www.youtube.com/watch?v=${item.url}`;
+                    item.url = item.url.includes('://') ? item.url : `https://www.youtube.com/watch?v=${item.url}`;
                     ytdl.getInfo(item.url)
                         .then((info) => {
-                            item.name = info.videoDetails.title
-                                ? info.videoDetails.title
-                                : 'Unknown';
-                            item.duration = secondsToTimestamp(
-                                parseInt(info.videoDetails.lengthSeconds) || 0
-                            );
+                            item.name = info.videoDetails.title ? info.videoDetails.title : 'Unknown';
+                            item.duration = secondsToTimestamp(parseInt(info.videoDetails.lengthSeconds) || 0);
                             done(item);
                         })
                         .catch((err) => error(err));
