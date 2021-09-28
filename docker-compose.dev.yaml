@@ -1,0 +1,11 @@
+version: '3'
+
+services:
+    rhythm-bot-server:
+        build:
+            context: './'
+            dockerfile: './Containerfile'
+        environment:
+            STREAM_VOLUME: 0.05
+        # read in DISCORD_TOKEN from dotenv
+        env_file: .env
