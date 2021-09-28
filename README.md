@@ -36,10 +36,11 @@ Simple little music bot to queue up and play youtube audio over discord voice ch
 ## Configuration
 
 -   Get a token string for your bot from by registering your bot here: [https://discordapp.com/developers](https://discordapp.com/developers)
-    -   You should be able to find options to invite your bot to a channel here as well
+    -   Create an invite link like this
+        `https://discordapp.com/api/oauth2/authorize?client_id={ APPLICATION ID }&permissions=2159044672&scope=bot`
 -   Open `bot-config.json` and replace the content between the quotes `"<BOT-TOKEN-HERE>"` with your bot token.
-    -   In config you can add other settings, to see an example of the settings open `./src/bot/config.ts` and look at `DefaultBotConfig` and `BotConfig` for eamples
--   Open `bot.log` if your looking to debug errors
+    -   In config you can add other settings, to see an example of the settings open `./src/bot/config.ts` and look at `DefaultBotConfig` and `BotConfig` for examples
+-   Open `bot.log` if you're looking to debug errors
 
 ## Running the Application
 
