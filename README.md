@@ -27,8 +27,7 @@ Simple little music bot to queue up and play youtube audio over discord voice ch
 ## Installation
 
 -   Install node latest stable release, this was built with node v12.16.1
--   For windows run `npm install --global --production windows-build-tools`
-    -   Run `npm config set python python2.7`
+-   For windows run `npm install --global --production --add-python-to-path windows-build-tools`
     -   Run `npm install node-gyp -g`
     -   Run `npm install typescript -g`
     -   Run `npm install`
