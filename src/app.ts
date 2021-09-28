@@ -20,8 +20,6 @@ dotenv();
             config = readConfigFromEnv();
         }
 
-        console.log(config);
-
         const bot = new RhythmBot(config);
 
         if (!!config && config.discord.token === '<BOT-TOKEN>') {
