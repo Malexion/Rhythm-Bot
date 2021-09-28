@@ -34,5 +34,8 @@
     "ytdl-core": "^4.4.1",
     "ytpl": "^2.0.4",
     "zlib-sync": "^0.1.7"
+  },
+  "devDependencies": {
+    "prettier": "^2.4.1",
   }
 }
