@@ -44,7 +44,7 @@ export class MediaPlayer {
         })
         .then((item: MediaItem) => {
             if(this.channel && item)
-                this.channel.send(
+                this.channel.send({embed:
                     createEmbed()
                         .setTitle('Track Added')
                         .addFields(
@@ -52,11 +52,11 @@ export class MediaPlayer {
                             { name: 'Position:', value: `${this.queue.indexOf(item) + 1}`, inline: true },
                             { name: 'Requested By:', value: item.requestor, inline: true }
                         )
-                );
+         } );
         })
         .catch(err => {
             if(this.channel)
-                this.channel.send(createErrorEmbed(`Error adding track: ${err}`));
+                this.channel.send({embed: createErrorEmbed(`Error adding track: ${err}`)});
         });
     }
 
@@ -70,7 +70,7 @@ export class MediaPlayer {
         this.queue.dequeue(item);
         this.determineStatus();
         if(this.channel)
-            this.channel.send(createInfoEmbed(`Track Removed`, `${item.name}`));
+            this.channel.send({embed: createInfoEmbed('Track Removed:', item.name)});
     }
 
     clear() {
@@ -79,7 +79,8 @@ export class MediaPlayer {
         this.queue.clear();
         this.determineStatus();
         if(this.channel)
-            this.channel.send(createInfoEmbed(`Playlist Cleared`));
+            this.channel.send({embed: createInfoEmbed('Playlist Cleared',"add songs")});
+         
     }
 
     dispatchStream(stream: Readable, item: MediaItem) {
@@ -99,12 +100,12 @@ export class MediaPlayer {
             this.playing = true;
             this.determineStatus();
             if(this.channel) {
-                const msg = await this.channel.send(
+                const msg = await this.channel.send({embed:
                     createEmbed()
                         .setTitle('▶️ Now playing')
                         .setDescription(`${item.name}`)
                         .addField('Requested By', `${item.requestor}`)
-                );
+                });
                 msg.react(this.config.emojis.stopSong);
                 msg.react(this.config.emojis.playSong);
                 msg.react(this.config.emojis.pauseSong);
@@ -118,7 +119,7 @@ export class MediaPlayer {
             this.skip();
             this.logger.error(err);
             if(this.channel)
-                this.channel.send(createErrorEmbed(`Error Playing Song: ${err}`));
+                this.channel.send({embed:createErrorEmbed(`Error Playing Song: ${err}`)});
         });
         this.dispatcher.on('close', () => {
             this.logger.debug(`Stream Closed`);
@@ -161,9 +162,11 @@ export class MediaPlayer {
 
     play() {
         if(this.queue.length == 0 && this.channel)
-            this.channel.send(createInfoEmbed(`Queue is empty! Add some songs!`));
+            this.channel.send({embed: createInfoEmbed(`Queue is empty! Add some songs!`,"Use !add yt link")});
+          
         if(this.playing && !this.paused)
-            this.channel.send(createInfoEmbed(`Already playing a song!`));
+            this.channel.send({embed: createInfoEmbed(`Already playing a song!`,'wait for it to finish')});
+           
         let item = this.queue.first;
         if(item && this.connection) {
             let type = this.typeRegistry.get(item.type);
@@ -178,7 +181,8 @@ export class MediaPlayer {
                     this.paused = false;
                     this.determineStatus();
                     if(this.channel)
-                        this.channel.send(createInfoEmbed(`⏯️ "${this.queue.first.name}" resumed`));
+                        this.channel.send({embed: createInfoEmbed('⏯️this.queue.first.name','resumed')});
+                       
                 }
             }
         }
@@ -194,7 +198,8 @@ export class MediaPlayer {
             this.dispatcher.destroy();
             this.determineStatus();
             if(this.channel)
-                this.channel.send(createInfoEmbed(`⏹️ "${item.name}" stopped`));
+                this.channel.send({embed: createInfoEmbed('⏹️ item.name', 'stopped')});
+            
         }
     }
 
@@ -205,12 +210,14 @@ export class MediaPlayer {
             this.dispatcher.pause();
             this.dispatcher.destroy();
             if(this.channel)
-                this.channel.send(createInfoEmbed(`⏭️ "${item.name}" skipped`));
+                this.channel.send({embed : createInfoEmbed('⏭️ item.name', 'skipped')});
+              
         } else if(this.queue.length > 0) {
             let item = this.queue.first;
             this.queue.dequeue();
             if(this.channel)
-                this.channel.send(createInfoEmbed(`⏭️ "${item.name}" skipped`));
+                this.channel.send({embed: createInfoEmbed('⏭️ item.name',  'skipped')});
+              
         }
         this.determineStatus();
     }
@@ -221,7 +228,8 @@ export class MediaPlayer {
             this.paused = true;
             this.determineStatus();
             if(this.channel)
-                this.channel.send(createInfoEmbed(`⏸️ "${this.queue.first.name}" paused`));
+               this.channel.send({embed: createInfoEmbed('⏸️ this.queue.first.name', ' paused')});
+            
         }
     }
 
@@ -231,7 +239,8 @@ export class MediaPlayer {
         this.queue.shuffle();
         this.determineStatus();
         if(this.channel)
-            this.channel.send(createInfoEmbed(`🔀 Queue Shuffled`));
+            this.channel.send({embed: createInfoEmbed(`🔀 Queue Shuffled`,"random")});
+        
     }
 
     move(currentIdx: number, targetIdx: number) {

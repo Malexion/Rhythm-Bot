@@ -72,20 +72,24 @@ export class RhythmBot extends IBot<IRhythmBotConfig> {
                 joinUserChannel(msg)
                     .then(connection => {
                         this.player.connection = connection;
-                        msg.channel.send(createInfoEmbed(`Joined Channel: ${connection.channel.name}`));
+                        msg.channel.send({embed: createInfoEmbed('Joined Channel', "use !add yt link")});
+                    
                         if(this.config.auto.play)
                             this.player.play();
                     })
                     .catch(err => {
-                        msg.channel.send(createErrorEmbed(err));
+                        msg.channel.send({embed:createErrorEmbed(err)});
                     });
             })
-            .on('leave', (cmd: SuccessfulParsedMessage<Message>, msg: Message) => {
-                this.player.stop();
+            .on('leave',  (cmd: SuccessfulParsedMessage<Message>, msg: Message) => {
+              this.player.stop();
                 this.player.connection = null;
-                this.client.voice.connections.forEach(conn => {
+                this.client.voice.connections.forEach( conn => {
                     conn.disconnect();
-                    msg.channel.send(createInfoEmbed(`Disconnecting from channel: ${conn.channel.name}`));
+                    msg.channel.send({embed: createInfoEmbed('Disconnecting from channel:', conn.channel.name)});
+                  
+                  
+                  
                 });
             })
             .on('play', (cmd: SuccessfulParsedMessage<Message>, msg: Message) => {
@@ -94,7 +98,8 @@ export class RhythmBot extends IBot<IRhythmBotConfig> {
                         joinUserChannel(msg)
                             .then(conn => {
                                 this.player.connection = conn;
-                                msg.channel.send(createInfoEmbed(`Joined Channel: ${conn.channel.name}`));
+                                msg.channel.send({embed: createInfoEmbed('Joined Channel:', conn.channel.name)});
+                             
                                 done();
                             });
                     } else
@@ -110,9 +115,11 @@ export class RhythmBot extends IBot<IRhythmBotConfig> {
                 let media = this.player.queue.first;
                 if(this.player.playing && this.player.dispatcher) {
                     let elapsed = secondsToTimestamp(this.player.dispatcher.totalStreamTime / 1000);
-                    msg.channel.send(createInfoEmbed('Time Elapsed', `${elapsed} / ${media.duration}`));
+                 
+                    msg.channel.send({embed: createInfoEmbed('Time Elapsed:',  elapsed)});
                 } else if(this.player.queue.first) {
-                    msg.channel.send(createInfoEmbed('Time Elapsed', `00:00:00 / ${media.duration}`));
+                    msg.channel.send({embed: createInfoEmbed('Time Elapsed', `00:00:00 / ${media.duration}`)});
+                  
                 }
             })
             .on('search', (cmd: SuccessfulParsedMessage<Message>, msg: Message) => {
@@ -129,7 +136,7 @@ export class RhythmBot extends IBot<IRhythmBotConfig> {
                                 .addField('Duration', `${v.timestamp}`, true)
                                 .setThumbnail(v.image)
                                 .setURL(v.url);
-                            msg.channel.send(embed)
+                            msg.channel.send({embed:embed})
                                 .then(m => m.react(this.config.emojis.addSong));
                         });
                 });
@@ -137,11 +144,23 @@ export class RhythmBot extends IBot<IRhythmBotConfig> {
             .on('add', (cmd: SuccessfulParsedMessage<Message>, msg: Message) => {
                 if(cmd.arguments.length > 0) {
                     cmd.arguments.forEach(arg => {
-                        let parts = arg.split(':');
-                        if(parts.length == 2) {
-                            this.player.addMedia({ type: parts[0], url: parts[1], requestor: msg.author.username });
+                       // let parts = arg.split(':');
+                       // if(parts.length == 2) {
+                        let items = this.player.queue;
+                        if(arg.match("^(http(s):\/\/)?((w){3}.)?youtu(be|.be)?(\.com)?\/.+")){
+                        if(items.length<=1){
+                           
+                            this.player.addMedia({type:'youtube', url:arg,requestor:msg.author.username}).then(()=>{this.player.play()});
+                            
+                            
+                            
+                           }else{
+                            this.player.addMedia({type:'youtube', url:arg,requestor:msg.author.username});
+                           }
+                            
+                         //  this.player.addMedia({ type: parts[0], url: parts[1], requestor: msg.author.username });
                         } else
-                            msg.channel.send(createErrorEmbed(`Invalid media type format`));
+                            msg.channel.send({embed: createErrorEmbed(`Invalid media type format`)});
                     });
                 }
             })
@@ -164,9 +183,11 @@ export class RhythmBot extends IBot<IRhythmBotConfig> {
                 let items = this.player.queue
                     .map((item, idx) => `${idx + 1}. Type: "${item.type}", Title: "${item.name}${item.requestor ? `", Requested By: ${item.requestor}`:''}"`);
                 if(items.length > 0)
-                    msg.channel.send(createInfoEmbed('Current Playing Queue', items.join('\n\n')));
+                    msg.channel.send({embed:createInfoEmbed('Current Playing Queue', items.join('\n\n'))});
+                  
                 else
-                    msg.channel.send(createInfoEmbed(`There are no songs in the queue.`));
+                    msg.channel.send({embed: createInfoEmbed(`There are no songs in the queue.`,"Please !add songs")});
+                 
             })
             .on('clear', (cmd: SuccessfulParsedMessage<Message>, msg: Message) => {
                 this.player.clear();
@@ -197,11 +218,13 @@ export class RhythmBot extends IBot<IRhythmBotConfig> {
                         this.player.setVolume(volume);
                     }
                 }
-                msg.channel.send(createInfoEmbed(`Volume is at ${this.player.getVolume()}`));
+                msg.channel.send({embed: createInfoEmbed('Volume is at:', this.player.getVolume())});
+              
             })
             .on('repeat', (cmd: SuccessfulParsedMessage<Message>, msg: Message) => {
                 this.config.queue.repeat = !this.config.queue.repeat;
-                msg.channel.send(createInfoEmbed(`Repeat mode is ${this.config.queue.repeat ? 'on':'off'}`));
+                msg.channel.send({embed :createInfoEmbed('Repeat mode is: ', this.config.queue.repeat ? 'on':'off')});
+               
             });
     }
 

@@ -14,6 +14,7 @@ export default class YoutubePlugin extends IBotPlugin {
     preInitialize(bot: IBot<IRhythmBotConfig>): void {
         this.bot = bot as RhythmBot;
         this.bot.helptext += '\n`youtube [url/idfragment]` - Add youtube audio to the queue\n';
+       this.bot.helptext += '\n` !add youtube:*youtubecode*\n'
     }
 
     registerDiscordCommands(map: CommandMap<(cmd: SuccessfulParsedMessage<Message>, msg: Message) => void>) {
@@ -37,9 +38,10 @@ export default class YoutubePlugin extends IBotPlugin {
                         .catch(err => error(err));
                 }),
                 getDetails: (item: MediaItem) => new Promise<MediaItem>((done, error) => {
-                    item.url = item.url.includes('://') ? item.url : `https://www.youtube.com/watch?v=${item.url}`;
-                    ytdl.getInfo(item.url)
-                        .then(info => {
+                    //item.url = item.url.includes('://') ? item.url : `https://www.youtube.com/watch?v=${item.url}`;
+                 
+                  ytdl.getInfo(item.url)
+                        .then( info => {
                             item.name = info.videoDetails.title ? info.videoDetails.title : 'Unknown';
                             item.duration = secondsToTimestamp(parseInt(info.videoDetails.lengthSeconds) || 0);
                             done(item);
