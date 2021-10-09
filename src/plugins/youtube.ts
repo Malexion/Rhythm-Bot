@@ -75,8 +75,11 @@ export default class YoutubePlugin extends IBotPlugin {
                         filter: 'audioonly',
                         quality: 'highestaudio',
                     });
-                    if (stream) done(stream);
-                    else error('Unable to get media stream');
+                    if (stream) {
+                        done(stream);
+                    } else {
+                        error('Unable to get media stream');
+                    }
                 }),
         });
     }
