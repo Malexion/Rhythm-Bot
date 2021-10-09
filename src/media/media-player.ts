@@ -29,7 +29,7 @@ export class MediaPlayer {
     addMedia(item: MediaItem): Promise<void> {
         return new Promise((done, error) => {
             let type = this.typeRegistry.get(item.type);
-            if(type) {
+            if (type) {
                 type.getDetails(item)
                     .then((media) => {
                         item.name = media.name;
@@ -38,26 +38,36 @@ export class MediaPlayer {
                         this.queue.enqueue(item);
                         done(item);
                     })
-                    .catch(err => error(err));
-            } else
+                    .catch((err) => error(err));
+            } else {
                 error('Unknown Media Type!');
+            }
         })
-        .then((item: MediaItem) => {
-            if(this.channel && item)
-                this.channel.send(
-                    createEmbed()
-                        .setTitle('Track Added')
-                        .addFields(
-                            { name: 'Title:', value: item.name },
-                            { name: 'Position:', value: `${this.queue.indexOf(item) + 1}`, inline: true },
-                            { name: 'Requested By:', value: item.requestor, inline: true }
-                        )
-                );
-        })
-        .catch(err => {
-            if(this.channel)
-                this.channel.send(createErrorEmbed(`Error adding track: ${err}`));
-        });
+            .then((item: MediaItem) => {
+                if (this.channel && item)
+                    this.channel.send(
+                        createEmbed()
+                            .setTitle('Track Added')
+                            .addFields(
+                                { name: 'Title:', value: item.name },
+                                {
+                                    name: 'Position:',
+                                    value: `${this.queue.indexOf(item) + 1}`,
+                                    inline: true,
+                                },
+                                {
+                                    name: 'Requested By:',
+                                    value: item.requestor,
+                                    inline: true,
+                                }
+                            )
+                    );
+            })
+            .catch((err) => {
+                if (this.channel) {
+                    this.channel.send(createErrorEmbed(`Error adding track: ${err}`));
+                }
+            });
     }
 
     at(idx: number) {
@@ -65,25 +75,29 @@ export class MediaPlayer {
     }
 
     remove(item: MediaItem) {
-        if(item == this.queue.first && (this.playing || this.paused))
+        if (item == this.queue.first && (this.playing || this.paused)) {
             this.stop();
+        }
         this.queue.dequeue(item);
         this.determineStatus();
-        if(this.channel)
+        if (this.channel) {
             this.channel.send(createInfoEmbed(`Track Removed`, `${item.name}`));
+        }
     }
 
     clear() {
-        if(this.playing || this.paused)
+        if (this.playing || this.paused) {
             this.stop();
+        }
         this.queue.clear();
         this.determineStatus();
-        if(this.channel)
+        if (this.channel) {
             this.channel.send(createInfoEmbed(`Playlist Cleared`));
+        }
     }
 
     dispatchStream(stream: Readable, item: MediaItem) {
-        if(this.dispatcher) {
+        if (this.dispatcher) {
             this.dispatcher.end();
             this.dispatcher = null;
         }
@@ -93,12 +107,12 @@ export class MediaPlayer {
             bitrate: this.config.stream.bitrate,
             fec: this.config.stream.forwardErrorCorrection,
             plp: this.config.stream.packetLossPercentage,
-            highWaterMark: 1<<25
+            highWaterMark: 1 << 25,
         });
         this.dispatcher.on('start', async () => {
             this.playing = true;
             this.determineStatus();
-            if(this.channel) {
+            if (this.channel) {
                 const msg = await this.channel.send(
                     createEmbed()
                         .setTitle('▶️ Now playing')
@@ -114,11 +128,12 @@ export class MediaPlayer {
         this.dispatcher.on('debug', (info: string) => {
             this.logger.debug(info);
         });
-        this.dispatcher.on('error', err => {
+        this.dispatcher.on('error', (err) => {
             this.skip();
             this.logger.error(err);
-            if(this.channel)
+            if (this.channel) {
                 this.channel.send(createErrorEmbed(`Error Playing Song: ${err}`));
+            }
         });
         this.dispatcher.on('close', () => {
             this.logger.debug(`Stream Closed`);
@@ -126,13 +141,14 @@ export class MediaPlayer {
                 this.playing = false;
                 this.dispatcher = null;
                 this.determineStatus();
-                if(!this.stopping) {
+                if (!this.stopping) {
                     let track = this.queue.dequeue();
-                    if(this.config.queue.repeat)
+                    if (this.config.queue.repeat) {
                         this.queue.enqueue(track);
-                        setTimeout(() => {
-                            this.play();
-                        }, 1000);
+                    }
+                    setTimeout(() => {
+                        this.play();
+                    }, 1000);
                 }
                 this.stopping = false;
             }
@@ -143,13 +159,14 @@ export class MediaPlayer {
                 this.playing = false;
                 this.dispatcher = null;
                 this.determineStatus();
-                if(!this.stopping) {
+                if (!this.stopping) {
                     let track = this.queue.dequeue();
-                    if(this.config.queue.repeat)
+                    if (this.config.queue.repeat) {
                         this.queue.enqueue(track);
-                        setTimeout(() => {
-                            this.play();
-                        }, 1000);
+                    }
+                    setTimeout(() => {
+                        this.play();
+                    }, 1000);
                 }
                 this.stopping = false;
             }
@@ -160,32 +177,34 @@ export class MediaPlayer {
     }
 
     play() {
-        if(this.queue.length == 0 && this.channel)
+        if (this.queue.length == 0 && this.channel) {
             this.channel.send(createInfoEmbed(`Queue is empty! Add some songs!`));
-        if(this.playing && !this.paused)
+        }
+        if (this.playing && !this.paused) {
             this.channel.send(createInfoEmbed(`Already playing a song!`));
+        }
         let item = this.queue.first;
-        if(item && this.connection) {
+        if (item && this.connection) {
             let type = this.typeRegistry.get(item.type);
-            if(type) {
-                if(!this.playing) {
-                    type.getStream(item)
-                        .then(stream => {
-                            this.dispatchStream(stream, item);
-                        });
-                } else if(this.paused && this.dispatcher) {
+            if (type) {
+                if (!this.playing) {
+                    type.getStream(item).then((stream) => {
+                        this.dispatchStream(stream, item);
+                    });
+                } else if (this.paused && this.dispatcher) {
                     this.dispatcher.resume();
                     this.paused = false;
                     this.determineStatus();
-                    if(this.channel)
+                    if (this.channel) {
                         this.channel.send(createInfoEmbed(`⏯️ "${this.queue.first.name}" resumed`));
+                    }
                 }
             }
         }
     }
 
     stop() {
-        if(this.playing && this.dispatcher) {
+        if (this.playing && this.dispatcher) {
             let item = this.queue.first;
             this.stopping = true;
             this.paused = false;
@@ -193,45 +212,49 @@ export class MediaPlayer {
             this.dispatcher.pause();
             this.dispatcher.destroy();
             this.determineStatus();
-            if(this.channel)
-                this.channel.send(createInfoEmbed(`⏹️ "${item.name}" stopped`));
+            if (this.channel) this.channel.send(createInfoEmbed(`⏹️ "${item.name}" stopped`));
         }
     }
 
     skip() {
-        if(this.playing && this.dispatcher) {
+        if (this.playing && this.dispatcher) {
             let item = this.queue.first;
             this.paused = false;
             this.dispatcher.pause();
             this.dispatcher.destroy();
-            if(this.channel)
+            if (this.channel) {
                 this.channel.send(createInfoEmbed(`⏭️ "${item.name}" skipped`));
-        } else if(this.queue.length > 0) {
+            }
+        } else if (this.queue.length > 0) {
             let item = this.queue.first;
             this.queue.dequeue();
-            if(this.channel)
+            if (this.channel) {
                 this.channel.send(createInfoEmbed(`⏭️ "${item.name}" skipped`));
+            }
         }
         this.determineStatus();
     }
 
     pause() {
-        if(this.playing && !this.paused && this.dispatcher) {
+        if (this.playing && !this.paused && this.dispatcher) {
             this.dispatcher.pause();
             this.paused = true;
             this.determineStatus();
-            if(this.channel)
+            if (this.channel) {
                 this.channel.send(createInfoEmbed(`⏸️ "${this.queue.first.name}" paused`));
+            }
         }
     }
 
     shuffle() {
-        if(this.playing || this.paused)
+        if (this.playing || this.paused) {
             this.stop();
+        }
         this.queue.shuffle();
         this.determineStatus();
-        if(this.channel)
+        if (this.channel) {
             this.channel.send(createInfoEmbed(`🔀 Queue Shuffled`));
+        }
     }
 
     move(currentIdx: number, targetIdx: number) {
@@ -240,37 +263,42 @@ export class MediaPlayer {
         currentIdx = Math.min(Math.max(currentIdx, min), max);
         targetIdx = Math.min(Math.max(targetIdx, min), max);
 
-        if(currentIdx != targetIdx) {
+        if (currentIdx != targetIdx) {
             this.queue.move(currentIdx, targetIdx);
             this.determineStatus();
         }
     }
 
     setVolume(volume: number) {
-        volume = Math.min(Math.max((volume / 100) + 0.5, 0.5), 2);
+        volume = Math.min(Math.max(volume / 100 + 0.5, 0.5), 2);
         this.config.stream.volume = volume;
-        if(this.dispatcher) {
+        if (this.dispatcher) {
             this.dispatcher.setVolume(volume);
         }
     }
 
     getVolume() {
-        return ((this.config.stream.volume - 0.5) * 100) + '%';
+        return (this.config.stream.volume - 0.5) * 100 + '%';
     }
 
     determineStatus() {
         let item = this.queue.first;
-        if(item) {
-            if(this.playing) {
-                if(this.paused) {
+        if (item) {
+            if (this.playing) {
+                if (this.paused) {
                     this.status.setBanner(`Paused: "${item.name}" Requested by: ${item.requestor}`);
                 } else {
-                    this.status.setBanner(`Now Playing: "${item.name}" Requested by: ${item.requestor}${this.queue.length > 1 ? `, Up Next "${this.queue[1].name}"`:''}`);
+                    this.status.setBanner(
+                        `Now Playing: "${item.name}" Requested by: ${item.requestor}${
+                            this.queue.length > 1 ? `, Up Next "${this.queue[1].name}"` : ''
+                        }`
+                    );
                 }
-            } else
+            } else {
                 this.status.setBanner(`Up Next: "${item.name}" Requested by: ${item.requestor}`);
-        } else
+            }
+        } else {
             this.status.setBanner(`No Songs In Queue`);
+        }
     }
-
 }

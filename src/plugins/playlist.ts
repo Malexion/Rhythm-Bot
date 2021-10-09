@@ -1,7 +1,18 @@
-import { IRhythmBotConfig,RhythmBot } from '../bot';
+import { IRhythmBotConfig, RhythmBot } from '../bot';
 import { MediaItem } from '../media';
 import { createInfoEmbed } from '../helpers';
-import { IBot, IBotPlugin, readDir, readJson, writeJson, deleteFile, fileExists, SuccessfulParsedMessage, CommandMap, IBotConfig } from 'discord-bot-quickstart';
+import {
+    IBot,
+    IBotPlugin,
+    readDir,
+    readJson,
+    writeJson,
+    deleteFile,
+    fileExists,
+    SuccessfulParsedMessage,
+    CommandMap,
+    IBotConfig,
+} from 'discord-bot-quickstart';
 import { Message, Client } from 'discord.js';
 
 const playlistDir = '../playlists';
@@ -19,18 +30,26 @@ export default class PlaylistPlugin extends IBotPlugin {
 
     registerDiscordCommands(map: CommandMap<(cmd: SuccessfulParsedMessage<Message>, msg: Message) => void>) {
         map.on('playlist', (cmd: SuccessfulParsedMessage<Message>, msg: Message) => {
-            switch(cmd.arguments[0]) {
-                case 'load': this.load(cmd, msg); break;
-                case 'save': this.save(cmd, msg); break;
-                case 'delete': this.delete(cmd, msg); break;
-                default: this.list(cmd, msg); break;   
+            switch (cmd.arguments[0]) {
+                case 'load':
+                    this.load(cmd, msg);
+                    break;
+                case 'save':
+                    this.save(cmd, msg);
+                    break;
+                case 'delete':
+                    this.delete(cmd, msg);
+                    break;
+                default:
+                    this.list(cmd, msg);
+                    break;
             }
         });
     }
 
     list(cmd: SuccessfulParsedMessage<Message>, msg: Message) {
         let files = readDir(playlistDir)
-            .filter(file => file.includes('.json'))
+            .filter((file) => file.includes('.json'))
             .map((file, i) => `${i + 1}. ${file.replace('.json', '')}`);
 
         msg.channel.send(createInfoEmbed(`Playlists`, `${files.length == 0 ? 'No Playlists' : files.join('\n')}`));
@@ -38,10 +57,12 @@ export default class PlaylistPlugin extends IBotPlugin {
 
     load(cmd: SuccessfulParsedMessage<Message>, msg: Message) {
         let name = cmd.arguments[1];
-        if(name) {
-            let queue: IPlaylist = readJson(playlistDir, `${name}.json`) || { list: [] };
-            if(queue.list) {
-                if(cmd.arguments[2] == 'append') {
+        if (name) {
+            let queue: IPlaylist = readJson(playlistDir, `${name}.json`) || {
+                list: [],
+            };
+            if (queue.list) {
+                if (cmd.arguments[2] == 'append') {
                     this.bot.player.queue.push(...queue.list);
                 } else {
                     this.bot.player.clear();
@@ -55,9 +76,11 @@ export default class PlaylistPlugin extends IBotPlugin {
 
     save(cmd: SuccessfulParsedMessage<Message>, msg: Message) {
         let name = cmd.arguments[1];
-        if(name) {
-            let queue: IPlaylist = { list: this.bot.player.queue.map(x => x) };
-            if(queue.list.length > 0) {
+        if (name) {
+            let queue: IPlaylist = {
+                list: this.bot.player.queue.map((x) => x),
+            };
+            if (queue.list.length > 0) {
                 writeJson(queue, playlistDir, `${name}.json`);
             }
             msg.channel.send(createInfoEmbed(`Saved Playlist "${name}"`));
@@ -66,18 +89,17 @@ export default class PlaylistPlugin extends IBotPlugin {
 
     delete(cmd: SuccessfulParsedMessage<Message>, msg: Message) {
         let name = cmd.arguments[1];
-        if(name && fileExists(playlistDir, `${name}.json`)) {
+        if (name && fileExists(playlistDir, `${name}.json`)) {
             deleteFile(playlistDir, `${name}.json`);
             msg.channel.send(createInfoEmbed(`Deleted Playlist "${name}"`));
         }
     }
 
-    registerConsoleCommands() { }
+    registerConsoleCommands() {}
 
-    clientBound() { }
+    clientBound() {}
 
-    postInitialize() { }
+    postInitialize() {}
 
-    onReady() { }
-
+    onReady() {}
 }
