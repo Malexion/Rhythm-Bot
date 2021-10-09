@@ -72,7 +72,7 @@ export class RhythmBot extends IBot<IRhythmBotConfig> {
                 joinUserChannel(msg)
                     .then(connection => {
                         this.player.connection = connection;
-                        msg.channel.send({embed: createInfoEmbed('Joined Channel', "use !add yt link")});
+                        msg.channel.send({embed: createInfoEmbed('Joined Channel', "use !add *yt link* to queue a  song")});
                     
                         if(this.config.auto.play)
                             this.player.play();
@@ -105,7 +105,11 @@ export class RhythmBot extends IBot<IRhythmBotConfig> {
                     } else
                         done();
                 }).then(() => {
+                   if(this.player.queue.length<=1 && cmd.body.match("^(http(s):\/\/)?((w){3}.)?youtu(be|.be)?(\.com)?\/.+")){
+                    this.player.addMedia({type:'youtube', url:cmd.body,requestor:msg.author.username}).then(()=>{this.player.play()});
+                   }else{
                     this.player.play();
+                   }
                 });
             })
             .on('pause', (cmd: SuccessfulParsedMessage<Message>, msg: Message) => {

@@ -8,7 +8,7 @@ Commands:
 `pause` - Pause the current song
 `resume` - Resume the current song
 `time` - Time of the current song
-`add [type] [url/idfragment]` - Add a song to the end of the queue
+`add *yt link*` - Add a song to the end of the queue
 `remove [index]` - Remove song at index
 `skip` - Skip the current song
 `stop` - Stop the current song and reset to the beginning

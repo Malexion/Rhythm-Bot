@@ -181,7 +181,7 @@ export class MediaPlayer {
                     this.paused = false;
                     this.determineStatus();
                     if(this.channel)
-                        this.channel.send({embed: createInfoEmbed('⏯️this.queue.first.name','resumed')});
+                        this.channel.send({embed: createInfoEmbed(`⏯️${this.queue.first.name}`,'resumed')});
                        
                 }
             }
@@ -198,7 +198,7 @@ export class MediaPlayer {
             this.dispatcher.destroy();
             this.determineStatus();
             if(this.channel)
-                this.channel.send({embed: createInfoEmbed('⏹️ item.name', 'stopped')});
+                this.channel.send({embed: createInfoEmbed(`⏹️ ${item.name}`, 'stopped')});
             
         }
     }
@@ -210,13 +210,13 @@ export class MediaPlayer {
             this.dispatcher.pause();
             this.dispatcher.destroy();
             if(this.channel)
-                this.channel.send({embed : createInfoEmbed('⏭️ item.name', 'skipped')});
+                this.channel.send({embed : createInfoEmbed(`⏭️ ${item.name}`, 'skipped')});
               
         } else if(this.queue.length > 0) {
             let item = this.queue.first;
             this.queue.dequeue();
             if(this.channel)
-                this.channel.send({embed: createInfoEmbed('⏭️ item.name',  'skipped')});
+                this.channel.send({embed: createInfoEmbed(`⏭️ ${item.name}`,  'skipped')});
               
         }
         this.determineStatus();
@@ -228,7 +228,7 @@ export class MediaPlayer {
             this.paused = true;
             this.determineStatus();
             if(this.channel)
-               this.channel.send({embed: createInfoEmbed('⏸️ this.queue.first.name', ' paused')});
+               this.channel.send({embed: createInfoEmbed(`⏸️ ${this.queue.first.name}`, 'paused')});
             
         }
     }
@@ -239,7 +239,7 @@ export class MediaPlayer {
         this.queue.shuffle();
         this.determineStatus();
         if(this.channel)
-            this.channel.send({embed: createInfoEmbed(`🔀 Queue Shuffled`,"random")});
+            this.channel.send({embed: createInfoEmbed(`🔀 Queue Shuffled`,'Sej Umesel')});
         
     }
 
