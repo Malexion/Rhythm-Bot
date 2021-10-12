@@ -94,7 +94,11 @@ export class MediaPlayer {
             bitrate: this.config.stream.bitrate,
             fec: this.config.stream.forwardErrorCorrection,
             plp: this.config.stream.packetLossPercentage,
-            highWaterMark: 1<<25
+            filter: 'audioonly',
+            quality: 'highestaudio',
+            //posibila solutie dlChunkSize: 1<<12,
+           // highWaterMark: 1<<25  //orig
+           highWaterMark: 1 << 28
         });
         this.dispatcher.on('start', async () => {
             this.playing = true;
@@ -119,7 +123,7 @@ export class MediaPlayer {
             this.skip();
             this.logger.error(err);
             if(this.channel)
-                this.channel.send({embed:createErrorEmbed(`Error Playing Song: ${err}`)});
+                this.channel.send({embed:createErrorEmbed(`Aici err de rezolvat Miki !! Error Playing Song: ${err}`)});
         });
         this.dispatcher.on('close', () => {
             this.logger.debug(`Stream Closed`);

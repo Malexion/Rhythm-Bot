@@ -107,7 +107,28 @@ export class RhythmBot extends IBot<IRhythmBotConfig> {
                 }).then(() => {
                    if(this.player.queue.length<=1 && cmd.body.match("^(http(s):\/\/)?((w){3}.)?youtu(be|.be)?(\.com)?\/.+")){
                     this.player.addMedia({type:'youtube', url:cmd.body,requestor:msg.author.username}).then(()=>{this.player.play()});
-                   }else{
+                   }else if(cmd.body.length > 3 &&  !cmd.body.match("^(http(s):\/\/)?((w){3}.)?youtu(be|.be)?(\.com)?\/.+")){
+                    yts({
+                        query: cmd.body,
+                        pages: 1
+                    }, (err, result) => {
+                        result.videos
+                            .slice(0, 1)
+                            .forEach((v, idx) => {
+                                const embed = createEmbed()
+                                    .setTitle(`${v.title}`)
+                                    .addField('Author:', `${v.author.name}`, true)
+                                    .addField('Duration', `${v.timestamp}`, true)
+                                    .setThumbnail(v.image)
+                                    .setURL(v.url);
+                                    msg.channel.send({embed:embed})
+                                    .then(()=> {
+                                        this.player.addMedia({type:'youtube', url:v.url, requestor:msg.author.username}).then(()=>{this.player.play()});
+                                    });
+                            });
+                    });
+                    
+                   }else if(!this.player.playing && this.player.queue.length>0 ){
                     this.player.play();
                    }
                 });
