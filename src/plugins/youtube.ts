@@ -49,7 +49,7 @@ export default class YoutubePlugin extends IBotPlugin {
                         .catch(err => error(err));
                 }),
                 getStream: (item: MediaItem) => new Promise<Readable>((done, error) => {
-                    let stream = ytdl(item.url, { filter: 'audioonly', quality: 'highestaudio' });
+                    let stream = ytdl(item.url, { filter: 'audioonly', quality: 'highestaudio', highWaterMark:1<<28, dlChunkSize:1<<12 });
                     if(stream)
                         done(stream);
                     else

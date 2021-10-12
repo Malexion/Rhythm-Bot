@@ -94,8 +94,6 @@ export class MediaPlayer {
             bitrate: this.config.stream.bitrate,
             fec: this.config.stream.forwardErrorCorrection,
             plp: this.config.stream.packetLossPercentage,
-            filter: 'audioonly',
-            quality: 'highestaudio',
             //posibila solutie dlChunkSize: 1<<12,
            // highWaterMark: 1<<25  //orig
            highWaterMark: 1 << 28
