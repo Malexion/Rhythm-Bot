@@ -123,24 +123,37 @@ export class RhythmBot extends IBot<IRhythmBotConfig> {
                     msg.channel.send(createInfoEmbed('Time Elapsed', `00:00:00 / ${media.duration}`));
                 }
             })
-            .on('search', (cmd: SuccessfulParsedMessage<Message>, msg: Message) => {
-                yts(
-                    {
-                        query: cmd.body,
-                        pages: 1,
-                    },
-                    (err, result) => {
-                        result.videos.slice(0, 3).forEach((v, idx) => {
-                            const embed = createEmbed()
-                                .setTitle(`${v.title}`)
-                                .addField('Author:', `${v.author.name}`, true)
-                                .addField('Duration', `${v.timestamp}`, true)
-                                .setThumbnail(v.image)
-                                .setURL(v.url);
-                            msg.channel.send(embed).then((m) => m.react(this.config.emojis.addSong));
-                        });
+            .on('search', async (cmd: SuccessfulParsedMessage<Message>, msg: Message) => {
+                let noResults = false;
+
+                if (cmd.body != null && cmd.body !== '') {
+                    const videos = await yts({ query: cmd.body, pages: 1 }).then((res) => res.videos);
+                    if (videos != null && videos.length > 0) {
+                        await Promise.all(
+                            videos
+                                .slice(0, 3)
+                                .map((video) =>
+                                    createEmbed()
+                                        .setTitle(`${video.title}`)
+                                        .addField('Author:', `${video.author.name}`, true)
+                                        .addField('Duration', `${video.timestamp}`, true)
+                                        .setThumbnail(video.image)
+                                        .setURL(video.url)
+                                )
+                                .map((embed) =>
+                                    msg.channel.send(embed).then((m) => m.react(this.config.emojis.addSong))
+                                )
+                        );
+                    } else {
+                        noResults = true;
                     }
-                );
+                } else {
+                    noResults = true;
+                }
+
+                if (noResults) {
+                    msg.channel.send(createInfoEmbed(`No songs found`));
+                }
             })
             .on('add', (cmd: SuccessfulParsedMessage<Message>, msg: Message) => {
                 if (cmd.arguments.length > 0) {
