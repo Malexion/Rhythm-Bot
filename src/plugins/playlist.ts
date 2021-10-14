@@ -63,7 +63,7 @@ export default class PlaylistPlugin extends IBotPlugin {
     async load(cmd: SuccessfulParsedMessage<Message>, msg: Message) {
         let name = cmd.arguments[1];
         if (name) {
-            const queue = await this.playlistRepo.findOneOrFail({ name }).catch(() => {
+            const queue = await this.playlistRepo.findOneOrFail({ name }, true).catch(() => {
                 msg.channel.send(createInfoEmbed(`Could not find playlist "${name}"`));
             });
 
