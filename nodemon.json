@@ -1,0 +1,7 @@
+{
+    "$schema": "https://json.schemastore.org/nodemon.json",
+    "watch": ["src"],
+    "ext": "ts,js,json",
+    "ignore": [".git", "node_modules/**/node_modules", "src/**/*.spec.ts"],
+    "exec": "ts-node ./src/app"
+}
