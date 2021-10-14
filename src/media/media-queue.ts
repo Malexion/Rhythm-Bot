@@ -16,9 +16,13 @@ export class MediaQueue extends Array<MediaItem> {
     dequeue(item?: MediaItem): MediaItem {
         if (item) {
             let idx = this.indexOf(item);
-            if (idx > -1) this.splice(idx, 1);
+            if (idx > -1) {
+                this.splice(idx, 1);
+            }
             return item;
-        } else return this.shift();
+        } else {
+            return this.shift();
+        }
     }
 
     clear() {

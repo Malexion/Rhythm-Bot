@@ -69,7 +69,9 @@ export class RhythmBot extends IBot<IRhythmBotConfig> {
     onRegisterDiscordCommands(map: CommandMap<(cmd: SuccessfulParsedMessage<Message>, msg: Message) => void>): void {
         map.on('ping', (cmd: SuccessfulParsedMessage<Message>, msg: Message) => {
             let phrases = pingPhrases.slice();
-            if (msg.guild) phrases = phrases.concat(msg.guild.emojis.cache.array().map((x) => x.name));
+            if (msg.guild) {
+                phrases = phrases.concat(msg.guild.emojis.cache.array().map((x) => x.name));
+            }
             msg.channel.send(random(phrases));
         })
             .on('help', (cmd: SuccessfulParsedMessage<Message>, msg: Message) => {
@@ -80,7 +82,9 @@ export class RhythmBot extends IBot<IRhythmBotConfig> {
                     .then((connection) => {
                         this.player.connection = connection;
                         msg.channel.send(createInfoEmbed(`Joined Channel: ${connection.channel.name}`));
-                        if (this.config.auto.play) this.player.play();
+                        if (this.config.auto.play) {
+                            this.player.play();
+                        }
                     })
                     .catch((err) => {
                         msg.channel.send(createErrorEmbed(err));
@@ -148,7 +152,9 @@ export class RhythmBot extends IBot<IRhythmBotConfig> {
                                 url: parts[1],
                                 requestor: msg.author.username,
                             });
-                        } else msg.channel.send(createErrorEmbed(`Invalid media type format`));
+                        } else {
+                            msg.channel.send(createErrorEmbed(`Invalid media type format`));
+                        }
                     });
                 }
             })
@@ -174,8 +180,11 @@ export class RhythmBot extends IBot<IRhythmBotConfig> {
                             item.requestor ? `", Requested By: ${item.requestor}` : ''
                         }"`
                 );
-                if (items.length > 0) msg.channel.send(createInfoEmbed('Current Playing Queue', items.join('\n\n')));
-                else msg.channel.send(createInfoEmbed(`There are no songs in the queue.`));
+                if (items.length > 0) {
+                    msg.channel.send(createInfoEmbed('Current Playing Queue', items.join('\n\n')));
+                } else {
+                    msg.channel.send(createInfoEmbed(`There are no songs in the queue.`));
+                }
             })
             .on('clear', (cmd: SuccessfulParsedMessage<Message>, msg: Message) => {
                 this.player.clear();
@@ -185,9 +194,13 @@ export class RhythmBot extends IBot<IRhythmBotConfig> {
                     let current = Math.min(Math.max(parseInt(cmd.arguments[0]), 0), this.player.queue.length - 1),
                         targetDesc = cmd.arguments[0],
                         target = 0;
-                    if (targetDesc == 'up') target = Math.min(current - 1, 0);
-                    else if (targetDesc == 'down') target = Math.max(current + 1, this.player.queue.length - 1);
-                    else target = parseInt(targetDesc);
+                    if (targetDesc == 'up') {
+                        target = Math.min(current - 1, 0);
+                    } else if (targetDesc == 'down') {
+                        target = Math.max(current + 1, this.player.queue.length - 1);
+                    } else {
+                        target = parseInt(targetDesc);
+                    }
 
                     this.player.move(current, target);
                 }
