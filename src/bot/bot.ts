@@ -17,9 +17,7 @@ import {
 import { search as yts } from 'yt-search';
 
 const helptext = readFile('../helptext.txt');
-const random = (array) => {
-    return array[Math.floor(Math.random() * array.length)];
-};
+const random = (array) => array[Math.floor(Math.random() * array.length)];
 const pingPhrases = [`Can't stop won't stop!`, `:ping_pong: Pong Bitch!`];
 
 export class RhythmBot extends IBot<IRhythmBotConfig> {
