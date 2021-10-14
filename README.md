@@ -37,6 +37,14 @@ Simple little music bot to queue up and play youtube audio over discord voice ch
     > `!clear`
 -   Move song in queue
     > `!move [targetIndex] [up/down/destIndex]`
+-   Save queue as playlist
+    > `!playlist save my_awesome_playlist`
+-   Load playlist to queue
+    > `!playlist load my_awesome_playlist`
+-   Delete playlist
+    > `!playlist delete my_less_awesome_playlist`
+-   List playlists
+    > `!playlist list`
 
 ## Bot Hosting
 
