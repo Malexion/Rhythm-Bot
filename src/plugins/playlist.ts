@@ -21,7 +21,6 @@ import { MediaItem } from '../media/media-item.model';
 export default class PlaylistPlugin extends IBotPlugin {
     bot: RhythmBot;
     playlistRepo: EntityRepository<Playlist> = ORM.em.getRepository(Playlist);
-    playlistItemRepo: EntityRepository<MediaItem> = ORM.em.getRepository(MediaItem);
 
     preInitialize(bot: IBot<IRhythmBotConfig>) {
         this.bot = bot as RhythmBot;
@@ -63,17 +62,16 @@ export default class PlaylistPlugin extends IBotPlugin {
     async load(cmd: SuccessfulParsedMessage<Message>, msg: Message) {
         let name = cmd.arguments[1];
         if (name) {
-            const queue = await this.playlistRepo.findOneOrFail({ name }, true).catch(() => {
-                msg.channel.send(createInfoEmbed(`Could not find playlist "${name}"`));
-            });
+            const playlist = await this.playlistRepo.findOne({ name });
 
-            if (queue instanceof Playlist) {
-                if (cmd.arguments[2] == 'append') {
-                    this.bot.player.queue.push(...queue.list);
-                } else {
+            if (playlist == null) {
+                msg.channel.send(createInfoEmbed(`Could not find playlist "${name}"`));
+            } else {
+                if (cmd.arguments[2] != 'append') {
                     this.bot.player.clear();
-                    this.bot.player.queue.push(...queue.list);
                 }
+                this.bot.player.queue.push(...playlist.list);
+
                 this.bot.player.determineStatus();
                 msg.channel.send(createInfoEmbed(`Loaded playlist "${name}"`));
             }
@@ -83,13 +81,15 @@ export default class PlaylistPlugin extends IBotPlugin {
     async save(cmd: SuccessfulParsedMessage<Message>, msg: Message) {
         let name = cmd.arguments[1];
         if (name) {
-            let queue = ORM.em.create(Playlist, {
-                name,
-                list: this.bot.player.queue,
-            });
+            if (this.bot.player.queue.length > 0) {
+                let playlist = await this.playlistRepo.findOne({ name });
+                if (playlist != null) {
+                    playlist.list = this.bot.player.queue;
+                } else {
+                    playlist = ORM.em.create(Playlist, { name, list: this.bot.player.queue });
+                }
+                await this.playlistRepo.persistAndFlush(playlist);
 
-            if (queue.list.length > 0) {
-                await this.playlistRepo.persist(queue).flush();
                 msg.channel.send(createInfoEmbed(`Saved playlist "${name}"`));
             } else {
                 msg.channel.send(createInfoEmbed(`Cannot save empty playlist`));
@@ -100,10 +100,7 @@ export default class PlaylistPlugin extends IBotPlugin {
     async delete(cmd: SuccessfulParsedMessage<Message>, msg: Message) {
         let name = cmd.arguments[1];
         if (name) {
-            const [deletedPlaylist] = await Promise.all([
-                this.playlistRepo.nativeDelete({ name }),
-                this.playlistItemRepo.nativeDelete({ playlist: { name } }),
-            ]);
+            const [deletedPlaylist] = await Promise.all([this.playlistRepo.nativeDelete({ name })]);
 
             if (deletedPlaylist > 0) {
                 msg.channel.send(createInfoEmbed(`Deleted playlist "${name}"`));

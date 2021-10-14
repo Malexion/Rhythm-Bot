@@ -30,13 +30,11 @@ export default class YoutubePlugin extends IBotPlugin {
         map.on(youtubeType, (cmd: SuccessfulParsedMessage<Message>, msg: Message) => {
             if (cmd.arguments.length > 0) {
                 cmd.arguments.forEach((arg) => {
-                    this.bot.player.addMedia(
-                        ORM.em.create(MediaItem, {
-                            type: youtubeType,
-                            url: arg,
-                            requestor: msg.author.username,
-                        })
-                    );
+                    this.bot.player.addMedia({
+                        type: youtubeType,
+                        url: arg,
+                        requestor: msg.author.username,
+                    });
                 });
             }
         });
