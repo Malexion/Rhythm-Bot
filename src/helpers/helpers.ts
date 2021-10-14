@@ -1,5 +1,5 @@
 import { Message, VoiceConnection, MessageEmbed } from 'discord.js';
-import * as moment from 'moment';
+import moment from 'moment';
 
 export function joinUserChannel(msg: Message): Promise<VoiceConnection> {
     return new Promise((done, error) => {

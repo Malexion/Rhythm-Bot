@@ -14,7 +14,7 @@ import {
     MessageReaction,
     User,
 } from 'discord-bot-quickstart';
-import * as yts from 'yt-search';
+import { search as yts } from 'yt-search';
 
 const helptext = readFile('../helptext.txt');
 const random = (array) => {
