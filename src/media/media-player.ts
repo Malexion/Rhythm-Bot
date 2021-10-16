@@ -70,7 +70,7 @@ export class MediaPlayer {
         this.queue.dequeue(item);
         this.determineStatus();
         if(this.channel)
-            this.channel.send({embed: createInfoEmbed('Track Removed:', item.name)});
+            this.channel.send({embed: createInfoEmbed(`Track Removed: ${item.name}`)});
     }
 
     clear() {
@@ -79,7 +79,7 @@ export class MediaPlayer {
         this.queue.clear();
         this.determineStatus();
         if(this.channel)
-            this.channel.send({embed: createInfoEmbed('Playlist Cleared',"add songs")});
+            this.channel.send({embed: createInfoEmbed(`Playlist Cleared!`)});
          
     }
 
@@ -94,8 +94,6 @@ export class MediaPlayer {
             bitrate: this.config.stream.bitrate,
             fec: this.config.stream.forwardErrorCorrection,
             plp: this.config.stream.packetLossPercentage,
-            //posibila solutie dlChunkSize: 1<<12,
-           // highWaterMark: 1<<25  //orig
            highWaterMark: 1 << 28
         });
         this.dispatcher.on('start', async () => {
@@ -121,7 +119,7 @@ export class MediaPlayer {
             this.skip();
             this.logger.error(err);
             if(this.channel)
-                this.channel.send({embed:createErrorEmbed(`Aici err de rezolvat Miki !! Error Playing Song: ${err}`)});
+                this.channel.send({embed:createErrorEmbed(`@Miki-> Error Playing Song: ${err}`)});
         });
         this.dispatcher.on('close', () => {
             this.logger.debug(`Stream Closed`);
@@ -164,10 +162,10 @@ export class MediaPlayer {
 
     play() {
         if(this.queue.length == 0 && this.channel)
-            this.channel.send({embed: createInfoEmbed(`Queue is empty! Add some songs!`,"Use !add yt link")});
+            this.channel.send({embed: createInfoEmbed(`Queue is empty! Add some songs!`)});
           
         if(this.playing && !this.paused)
-            this.channel.send({embed: createInfoEmbed(`Already playing a song!`,'wait for it to finish')});
+            this.channel.send({embed: createInfoEmbed(`Already playing a song!`)});
            
         let item = this.queue.first;
         if(item && this.connection) {
@@ -183,7 +181,7 @@ export class MediaPlayer {
                     this.paused = false;
                     this.determineStatus();
                     if(this.channel)
-                        this.channel.send({embed: createInfoEmbed(`⏯️${this.queue.first.name}`,'resumed')});
+                        this.channel.send({embed: createInfoEmbed(`⏯️ ${this.queue.first.name}resumed`)});
                        
                 }
             }
@@ -200,7 +198,7 @@ export class MediaPlayer {
             this.dispatcher.destroy();
             this.determineStatus();
             if(this.channel)
-                this.channel.send({embed: createInfoEmbed(`⏹️ ${item.name}`, 'stopped')});
+                this.channel.send({embed: createInfoEmbed(`⏹️ ${item.name} stopped`)});
             
         }
     }
@@ -212,13 +210,13 @@ export class MediaPlayer {
             this.dispatcher.pause();
             this.dispatcher.destroy();
             if(this.channel)
-                this.channel.send({embed : createInfoEmbed(`⏭️ ${item.name}`, 'skipped')});
+                this.channel.send({embed : createInfoEmbed(`⏭️ ${item.name} skipped`)});
               
         } else if(this.queue.length > 0) {
             let item = this.queue.first;
             this.queue.dequeue();
             if(this.channel)
-                this.channel.send({embed: createInfoEmbed(`⏭️ ${item.name}`,  'skipped')});
+                this.channel.send({embed: createInfoEmbed(`⏭️ ${item.name} skipped`)});
               
         }
         this.determineStatus();
@@ -230,7 +228,7 @@ export class MediaPlayer {
             this.paused = true;
             this.determineStatus();
             if(this.channel)
-               this.channel.send({embed: createInfoEmbed(`⏸️ ${this.queue.first.name}`, 'paused')});
+               this.channel.send({embed: createInfoEmbed(`⏸️ ${this.queue.first.name} paused`)});
             
         }
     }
@@ -241,7 +239,7 @@ export class MediaPlayer {
         this.queue.shuffle();
         this.determineStatus();
         if(this.channel)
-            this.channel.send({embed: createInfoEmbed(`🔀 Queue Shuffled`,'Sej Umesel')});
+            this.channel.send({embed: createInfoEmbed(`🔀 Queue Shuffled`)});
         
     }
 

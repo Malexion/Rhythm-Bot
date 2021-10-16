@@ -34,7 +34,7 @@ export function createErrorEmbed(message: string) {
         .setDescription(message);
 }
 
-export function createInfoEmbed(title: string, message: string) {
+export function createInfoEmbed(title: string, message: string='') {
     return new MessageEmbed()
         .setColor('#0099ff')
         .setTitle(title)

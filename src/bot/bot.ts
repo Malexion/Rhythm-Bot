@@ -72,7 +72,7 @@ export class RhythmBot extends IBot<IRhythmBotConfig> {
                 joinUserChannel(msg)
                     .then(connection => {
                         this.player.connection = connection;
-                        msg.channel.send({embed: createInfoEmbed('Joined Channel', "use !add *yt link* to queue a  song")});
+                        msg.channel.send({embed: createInfoEmbed(`Joined Channel: ${connection.channel.name}`)});
                     
                         if(this.config.auto.play)
                             this.player.play();
@@ -86,7 +86,7 @@ export class RhythmBot extends IBot<IRhythmBotConfig> {
                 this.player.connection = null;
                 this.client.voice.connections.forEach( conn => {
                     conn.disconnect();
-                    msg.channel.send({embed: createInfoEmbed('Disconnecting from channel:', conn.channel.name)});
+                    msg.channel.send({embed: createInfoEmbed(`Disconnecting from channel: ${conn.channel.name}`)});
                   
                   
                   
@@ -98,16 +98,19 @@ export class RhythmBot extends IBot<IRhythmBotConfig> {
                         joinUserChannel(msg)
                             .then(conn => {
                                 this.player.connection = conn;
-                                msg.channel.send({embed: createInfoEmbed('Joined Channel:', conn.channel.name)});
+                                msg.channel.send({embed: createInfoEmbed(`Joined Channel: ${conn.channel.name}`)});
                              
                                 done();
                             });
                     } else
                         done();
                 }).then(() => {
-                   if(this.player.queue.length<=1 && cmd.body.match("^(http(s):\/\/)?((w){3}.)?youtu(be|.be)?(\.com)?\/.+")){
-                    this.player.addMedia({type:'youtube', url:cmd.body,requestor:msg.author.username}).then(()=>{this.player.play()});
-                   }else if(cmd.body.length > 3 &&  !cmd.body.match("^(http(s):\/\/)?((w){3}.)?youtu(be|.be)?(\.com)?\/.+")){
+                   if(/*this.player.queue.length==1 &&*/ cmd.body.match("^(http(s):\/\/)?((w){3}.)?youtu(be|.be)?(\.com)?\/.+")){
+                    this.player.addMedia({type:'youtube', url:cmd.body,requestor:msg.author.username}).then(()=>{     
+                    if(!this.player.playing)    
+                        this.player.play();
+                    });
+                   }else if(cmd.body.length > 0 &&  !cmd.body.match("^(http(s):\/\/)?((w){3}.)?youtu(be|.be)?(\.com)?\/.+")){
                     yts({
                         query: cmd.body,
                         pages: 1
@@ -123,14 +126,17 @@ export class RhythmBot extends IBot<IRhythmBotConfig> {
                                     .setURL(v.url);
                                     msg.channel.send({embed:embed})
                                     .then(()=> {
-                                        this.player.addMedia({type:'youtube', url:v.url, requestor:msg.author.username}).then(()=>{this.player.play()});
+                                        this.player.addMedia({type:'youtube', url:v.url, requestor:msg.author.username}).then(()=>{
+                                            if(!this.player.playing)    
+                                            this.player.play();
+                                        });
                                     });
                             });
                     });
                     
-                   }else if(!this.player.playing && this.player.queue.length>0 ){
+                   }else //check if it's ok !
                     this.player.play();
-                   }
+                   
                 });
             })
             .on('pause', (cmd: SuccessfulParsedMessage<Message>, msg: Message) => {
@@ -141,9 +147,9 @@ export class RhythmBot extends IBot<IRhythmBotConfig> {
                 if(this.player.playing && this.player.dispatcher) {
                     let elapsed = secondsToTimestamp(this.player.dispatcher.totalStreamTime / 1000);
                  
-                    msg.channel.send({embed: createInfoEmbed('Time Elapsed:',  elapsed)});
+                    msg.channel.send({embed: createInfoEmbed(`Time Elapsed`,`${elapsed} / ${media.duration}`)});
                 } else if(this.player.queue.first) {
-                    msg.channel.send({embed: createInfoEmbed('Time Elapsed', `00:00:00 / ${media.duration}`)});
+                    msg.channel.send({embed: createInfoEmbed(`Time Elapsed`,`00.00.00 / ${media.duration}`)});
                   
                 }
             })
@@ -211,7 +217,7 @@ export class RhythmBot extends IBot<IRhythmBotConfig> {
                     msg.channel.send({embed:createInfoEmbed('Current Playing Queue', items.join('\n\n'))});
                   
                 else
-                    msg.channel.send({embed: createInfoEmbed(`There are no songs in the queue.`,"Please !add songs")});
+                    msg.channel.send({embed: createInfoEmbed(`There are no songs in the queue.`)});
                  
             })
             .on('clear', (cmd: SuccessfulParsedMessage<Message>, msg: Message) => {
@@ -243,12 +249,12 @@ export class RhythmBot extends IBot<IRhythmBotConfig> {
                         this.player.setVolume(volume);
                     }
                 }
-                msg.channel.send({embed: createInfoEmbed('Volume is at:', this.player.getVolume())});
+                msg.channel.send({embed: createInfoEmbed(`Volume is at ${this.player.getVolume()}`)});
               
             })
             .on('repeat', (cmd: SuccessfulParsedMessage<Message>, msg: Message) => {
                 this.config.queue.repeat = !this.config.queue.repeat;
-                msg.channel.send({embed :createInfoEmbed('Repeat mode is: ', this.config.queue.repeat ? 'on':'off')});
+                msg.channel.send({embed :createInfoEmbed(`Repeat mode is ${this.config.queue.repeat ? 'on' : 'off'}`)});
                
             });
     }

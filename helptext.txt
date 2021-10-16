@@ -4,7 +4,7 @@ Commands:
 `help` - Get the help text
 `join` - Join user voice channel
 `leave` - Leave voice channel
-`play` - Play the first song in the queue
+`play *yt link* or just the string to search` - Play the first song in the queue
 `pause` - Pause the current song
 `resume` - Resume the current song
 `time` - Time of the current song
