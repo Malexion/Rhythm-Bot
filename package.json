@@ -10,7 +10,10 @@
         "build": "tsc"
     },
     "author": "Malexion",
-    "license": "ISC",
+    "license": "MIT",
+    "repository": {
+        "url": "https://github.com/Malexion/Rhythm-Bot"
+    },
     "dependencies": {
         "@discordjs/opus": "^0.6.0",
         "@mikro-orm/core": "^4.5.9",

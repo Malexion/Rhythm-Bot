@@ -17,14 +17,45 @@ Note: This is not the bot listed here [https://rythmbot.co/](https://rythmbot.co
 
 Simple little music bot to queue up and play youtube audio over discord voice channels.
 
-## Unlisted dependencies
+## Bot Commands
+
+-   Show some helpful info
+    > `!help`
+-   Search for a video on YouTube
+    > `!youtube https://www.youtube.com/watch?v=dQw4w9WgXcQ`
+-   Join your voice channel
+    > `!join`
+-   Start the queue
+    > `!play`
+-   Search for a song
+    > `!search don't stop believin`
+-   List songs in the queue
+    > `!list`
+-   Shuffle the queue
+    > `!shuffle`
+-   Clear the queue
+    > `!clear`
+-   Move song in queue
+    > `!move [targetIndex] [up/down/destIndex]`
+-   Save queue as playlist
+    > `!playlist save my_awesome_playlist`
+-   Load playlist to queue
+    > `!playlist load my_awesome_playlist`
+-   Delete playlist
+    > `!playlist delete my_less_awesome_playlist`
+-   List playlists
+    > `!playlist list`
+
+## Bot Hosting
+
+### Unlisted dependencies
 
 -   `Python2.7` This version is required for node-gyp I think?
 -   `node-gyp` command line tool
 -   `node.js` version 12.X.X or higher is required
 -   `typescript` types for javascript, enables easier group collaboration and simple right click to look up definitions
 
-## Installation
+### Installation
 
 -   Install node latest stable release, this was built with node v12.16.1
 -   For windows run `npm install --global --production --add-python-to-path windows-build-tools`
@@ -32,7 +63,7 @@ Simple little music bot to queue up and play youtube audio over discord voice ch
     -   Run `npm install typescript -g`
     -   Run `npm install`
 
-## Configuration
+### Configuration
 
 -   Get a token string for your bot from by registering your bot here: [https://discordapp.com/developers](https://discordapp.com/developers)
     -   Create an invite link like this
@@ -41,6 +72,6 @@ Simple little music bot to queue up and play youtube audio over discord voice ch
     -   In config you can add other settings, to see an example of the settings open `./src/bot/config.ts` and look at `DefaultBotConfig` and `BotConfig` for examples
 -   Open `bot.log` if you're looking to debug errors
 
-## Running the Application
+### Running the Application
 
 -   Run `npm start`
