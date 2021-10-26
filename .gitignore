@@ -45,3 +45,4 @@ test.js
 bot-config.json
 *.env
 /build
+/migrations
