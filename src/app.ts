@@ -28,7 +28,7 @@ export let ORM: MikroORM<IDatabaseDriver<Connection>>;
 
         ORM = await MikroORM.init({
             type: 'sqlite',
-            dbName: 'rhythm.db',
+            dbName: 'data/rhythm.db',
             entities: [Playlist],
         });
         const migrator = ORM.getMigrator();

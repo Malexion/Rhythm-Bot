@@ -17,6 +17,8 @@ COPY helptext.txt ./
 COPY LICENSE ./
 COPY README.md ./
 
+VOLUME /home/rhythmbot/data
+
 CMD npm run start:prod
 
 # HEALTHCHECK CMD

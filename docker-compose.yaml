@@ -2,8 +2,10 @@ version: '3'
 
 services:
     rhythm-bot-server:
-        image: docker.pkg.github.com/Malexion/Rhythm-Bot/bot:latest
+        image: 'docker.pkg.github.com/Malexion/Rhythm-Bot/bot:latest'
+        volumes:
+            - './data:/home/rhythmbot/data'
         environment:
-            STREAM_VOLUME: 0.05
+            STREAM_VOLUME: '0.05'
         # read in DISCORD_TOKEN from dotenv
-        env_file: .env
+        env_file: '.env'
