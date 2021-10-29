@@ -14,12 +14,13 @@ import {
     MessageReaction,
     User,
 } from 'discord-bot-quickstart';
-import * as yts from 'yt-search';
+import { search as yts } from 'yt-search';
+import { EntityRepository } from '@mikro-orm/sqlite';
+import { ORM } from '../app';
+import { MediaItem } from '../media/media-item.model';
 
 const helptext = readFile('../helptext.txt');
-const random = (array) => {
-    return array[Math.floor(Math.random() * array.length)];
-};
+const random = (array) => array[Math.floor(Math.random() * array.length)];
 const pingPhrases = [`Can't stop won't stop!`, `:ping_pong: Pong Bitch!`];
 
 export class RhythmBot extends IBot<IRhythmBotConfig> {
