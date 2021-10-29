@@ -44,6 +44,7 @@ export default class YoutubePlugin extends IBotPlugin {
                         .then( info => {
                             item.name = info.videoDetails.title ? info.videoDetails.title : 'Unknown';
                             item.duration = secondsToTimestamp(parseInt(info.videoDetails.lengthSeconds) || 0);
+                            item.description = info.videoDetails.description? info.videoDetails.description : "No description available!";
                             done(item);
                         })
                         .catch(err => error(err));

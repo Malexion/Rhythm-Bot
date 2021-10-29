@@ -92,6 +92,11 @@ export class RhythmBot extends IBot<IRhythmBotConfig> {
                   
                 });
             })
+            .on('desc',(cmd:SuccessfulParsedMessage<Message>,msg:Message) =>{
+                if(this.player.playing && this.player.dispatcher) {
+                msg.channel.send({embed: createInfoEmbed(`Description:`,`${this.player.queue.first.description}`)});
+                }
+            })
             .on('play', (cmd: SuccessfulParsedMessage<Message>, msg: Message) => {
                 new Promise<void>(done => {
                     if(!this.player.connection) {
@@ -153,43 +158,52 @@ export class RhythmBot extends IBot<IRhythmBotConfig> {
                   
                 }
             })
-            .on('search', (cmd: SuccessfulParsedMessage<Message>, msg: Message) => {
-                yts({
-                    query: cmd.body,
-                    pages: 1
-                }, (err, result) => {
-                    result.videos
-                        .slice(0, 3)
-                        .forEach((v, idx) => {
-                            const embed = createEmbed()
-                                .setTitle(`${v.title}`)
-                                .addField('Author:', `${v.author.name}`, true)
-                                .addField('Duration', `${v.timestamp}`, true)
-                                .setThumbnail(v.image)
-                                .setURL(v.url);
-                            msg.channel.send({embed:embed})
-                                .then(m => m.react(this.config.emojis.addSong));
-                        });
-                });
+            //updated from original commit  = 44d41f46f70dfd6effc21d7ae49b23a81453773
+            .on('search', async (cmd: SuccessfulParsedMessage<Message>, msg: Message) => {
+                let noResults = false;
+
+                if (cmd.body != null && cmd.body !== '') {
+                    const videos = await yts({ query: cmd.body, pages: 1 }).then((res) => res.videos);
+                    if (videos != null && videos.length > 0) {
+                        await Promise.all(
+                            videos
+                                .slice(0, 3)
+                                .map((video) =>
+                                    createEmbed()
+                                        .setTitle(`${video.title}`)
+                                        .addField('Author:', `${video.author.name}`, true)
+                                        .addField('Duration', `${video.timestamp}`, true)
+                                        .setThumbnail(video.image)
+                                        .setURL(video.url)
+                                )
+                                .map((embed) =>
+                                    msg.channel.send(embed).then((m) => m.react(this.config.emojis.addSong))
+                                )
+                        );
+                    } else {
+                        noResults = true;
+                    }
+                } else {
+                    noResults = true;
+                }
+
+                if (noResults) {
+                    msg.channel.send(createInfoEmbed(`No songs found`));
+                }
             })
             .on('add', (cmd: SuccessfulParsedMessage<Message>, msg: Message) => {
                 if(cmd.arguments.length > 0) {
                     cmd.arguments.forEach(arg => {
-                       // let parts = arg.split(':');
-                       // if(parts.length == 2) {
                         let items = this.player.queue;
                         if(arg.match("^(http(s):\/\/)?((w){3}.)?youtu(be|.be)?(\.com)?\/.+")){
-                        if(items.length<=1){
-                           
-                            this.player.addMedia({type:'youtube', url:arg,requestor:msg.author.username}).then(()=>{this.player.play()});
-                            
-                            
-                            
+                        if(items.length<=1){                          
+                            this.player.addMedia({type:'youtube', url:arg,requestor:msg.author.username}).then(()=>{
+                                if(!this.player.playing)
+                                    this.player.play();
+                            }); 
                            }else{
                             this.player.addMedia({type:'youtube', url:arg,requestor:msg.author.username});
                            }
-                            
-                         //  this.player.addMedia({ type: parts[0], url: parts[1], requestor: msg.author.username });
                         } else
                             msg.channel.send({embed: createErrorEmbed(`Invalid media type format`)});
                     });

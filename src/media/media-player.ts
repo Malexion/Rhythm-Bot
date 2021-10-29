@@ -120,6 +120,7 @@ export class MediaPlayer {
             this.logger.error(err);
             if(this.channel)
                 this.channel.send({embed:createErrorEmbed(`@Miki-> Error Playing Song: ${err}`)});
+                    process.exit(2);
         });
         this.dispatcher.on('close', () => {
             this.logger.debug(`Stream Closed`);

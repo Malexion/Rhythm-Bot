@@ -18,3 +18,4 @@ Commands:
 `clear` - Clear songs in the queue
 `volume [0-100/nothing]` - Will set or get the current volume
 `repeat` - Toggle queue repeat mode
+`desc` - Show song description
