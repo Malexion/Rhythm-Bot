@@ -5,7 +5,9 @@ services:
         build:
             context: './'
             dockerfile: './Containerfile'
+        volumes:
+            - './data:/home/rhythmbot/data'
         environment:
-            STREAM_VOLUME: 0.05
+            STREAM_VOLUME: '0.05'
         # read in DISCORD_TOKEN from dotenv
-        env_file: .env
+        env_file: '.env'

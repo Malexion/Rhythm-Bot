@@ -11,8 +11,10 @@ import {
     IBotConfig,
 } from 'discord-bot-quickstart';
 import { Readable } from 'stream';
-import * as ytdl from 'ytdl-core';
-import * as ytpl from 'ytpl';
+import ytdl from 'ytdl-core';
+import { getInfo } from 'ytdl-core';
+import ytpl from 'ytpl';
+import { ORM } from '../app';
 
 const youtubeType: string = 'youtube';
 
@@ -61,7 +63,7 @@ export default class YoutubePlugin extends IBotPlugin {
             getDetails: (item: MediaItem) =>
                 new Promise<MediaItem>((done, error) => {
                     item.url = item.url.includes('://') ? item.url : `https://www.youtube.com/watch?v=${item.url}`;
-                    ytdl.getInfo(item.url)
+                    getInfo(item.url)
                         .then((info) => {
                             item.name = info.videoDetails.title ? info.videoDetails.title : 'Unknown';
                             item.duration = secondsToTimestamp(parseInt(info.videoDetails.lengthSeconds) || 0);

@@ -1,10 +1,16 @@
 import * as fs from 'fs';
 import { requireFile, projectDir, writeJson } from 'discord-bot-quickstart';
 import { config as dotenv } from 'dotenv';
+import { MikroORM, IDatabaseDriver, Connection } from '@mikro-orm/core';
+import { EntityManager } from '@mikro-orm/sqlite';
 
 import { IRhythmBotConfig, RhythmBot } from './bot';
+import { Playlist } from './media/playlist.model';
+import { MediaItem } from './media/media-item.model';
 
 dotenv();
+
+export let ORM: MikroORM<IDatabaseDriver<Connection>>;
 
 (async () => {
     try {
@@ -19,6 +25,15 @@ dotenv();
         } else {
             config = readConfigFromEnv();
         }
+
+        ORM = await MikroORM.init({
+            type: 'sqlite',
+            dbName: 'data/rhythm.db',
+            entities: [Playlist],
+        });
+        const migrator = ORM.getMigrator();
+        migrator.createMigration();
+        await migrator.up();
 
         const bot = new RhythmBot(config);
 
