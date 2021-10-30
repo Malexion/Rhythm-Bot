@@ -127,7 +127,7 @@ export class MediaPlayer {
             if (this.dispatcher) {
                 this.playing = false;
                 this.dispatcher = null;
-                this.determineStatus();
+              //  this.determineStatus();
                 if(!this.stopping) {
                     let track = this.queue.dequeue();
                     if(this.config.queue.repeat)
@@ -138,6 +138,7 @@ export class MediaPlayer {
                 }
                 this.stopping = false;
             }
+            this.determineStatus();
         });
         this.dispatcher.on('finish', () => {
             this.logger.debug('Stream Finished');
@@ -158,6 +159,7 @@ export class MediaPlayer {
         });
         this.dispatcher.on('end', (reason: string) => {
             this.logger.debug(`Stream Ended: ${reason}`);
+            this.determineStatus();
         });
     }
 
