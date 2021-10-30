@@ -15,7 +15,7 @@ dotenv();
             if (!fs.existsSync(configPath)) {
                 await writeJson({ discord: { token: '<BOT-TOKEN>' } }, configPath);
             }
-            requireFile(configPath);
+            config = requireFile(configPath);
         } else {
             config = readConfigFromEnv();
         }
