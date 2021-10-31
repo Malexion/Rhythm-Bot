@@ -38,20 +38,23 @@ export default class YoutubePlugin extends IBotPlugin {
                         .catch(err => error(err));
                 }),
                 getDetails: (item: MediaItem) => new Promise<MediaItem>((done, error) => {
-                    //item.url = item.url.includes('://') ? item.url : `https://www.youtube.com/watch?v=${item.url}`;
-                 
                   ytdl.getInfo(item.url)
                         .then( info => {
                             item.name = info.videoDetails.title ? info.videoDetails.title : 'Unknown';
                             item.duration = secondsToTimestamp(parseInt(info.videoDetails.lengthSeconds) || 0);
                             item.description = info.videoDetails.description? info.videoDetails.description : "No description available!";
+                            item.isLive = info.videoDetails.isLiveContent? info.videoDetails.isLiveContent: false ;
                             done(item);
                         })
                         .catch(err => error(err));
                 }),
                 getStream: (item: MediaItem) => new Promise<Readable>((done, error) => {
-                    let stream = ytdl(item.url, { filter: 'audioonly', quality: 'highestaudio', highWaterMark:1<<28, dlChunkSize:1<<12 });
-                    if(stream)
+                   // let stream = ytdl(item.url, { filter: 'audioonly', quality: 'highestaudio', highWaterMark:1<<28, dlChunkSize:1<<12, liveBuffer: 4900 });
+                  let stream = ytdl(item.url, { quality: 'highestaudio', 
+                  filter: (item.isLive ? (format => format.isHLS === true) : (format => format.container === 'webm' && format.codecs === 'opus')),
+                   highWaterMark: 1<<10, liveBuffer: 4000, dlChunkSize: 1<<12 }); 
+                  
+                   if(stream)
                         done(stream);
                     else
                         error('Unable to get media stream');

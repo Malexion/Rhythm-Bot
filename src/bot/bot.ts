@@ -141,6 +141,7 @@ export class RhythmBot extends IBot<IRhythmBotConfig> {
                     
                    }else //check if it's ok !
                     this.player.play();
+                //    this.player.determineStatus(); this was on when it worked
                    
                 });
             })
@@ -168,18 +169,17 @@ export class RhythmBot extends IBot<IRhythmBotConfig> {
                         await Promise.all(
                             videos
                                 .slice(0, 3)
-                                .map((video) =>
-                                    createEmbed()
+                                .map((video) =>{
+                                    const embed = createEmbed()
                                         .setTitle(`${video.title}`)
                                         .addField('Author:', `${video.author.name}`, true)
                                         .addField('Duration', `${video.timestamp}`, true)
                                         .setThumbnail(video.image)
-                                        .setURL(video.url)
-                                )
-                                .map((embed) =>
-                                    msg.channel.send(embed).then((m) => m.react(this.config.emojis.addSong))
-                                )
-                        );
+                                        .setURL(video.url);
+                                    msg.channel.send({embed:embed})
+                                        .then(m => m.react(this.config.emojis.addSong));
+                                })
+                        )
                     } else {
                         noResults = true;
                     }
@@ -188,7 +188,7 @@ export class RhythmBot extends IBot<IRhythmBotConfig> {
                 }
 
                 if (noResults) {
-                    msg.channel.send(createInfoEmbed(`No songs found`));
+                    msg.channel.send({embed: createErrorEmbed(`No songs found OR No search string provided`)});
                 }
             })
             .on('add', (cmd: SuccessfulParsedMessage<Message>, msg: Message) => {

@@ -34,8 +34,10 @@ export class MediaPlayer {
                     .then((media) => {
                         item.name = media.name;
                         item.duration = media.duration;
-                        this.determineStatus();
+                        item.description = media.description;//test
+                        item.isLive = media.isLive;//test
                         this.queue.enqueue(item);
+                        this.determineStatus();
                         done(item);
                     })
                     .catch(err => error(err));
@@ -53,6 +55,7 @@ export class MediaPlayer {
                             { name: 'Requested By:', value: item.requestor, inline: true }
                         )
          } );
+      
         })
         .catch(err => {
             if(this.channel)
@@ -163,7 +166,7 @@ export class MediaPlayer {
         });
     }
 
-    play() {
+  async  play() {
         if(this.queue.length == 0 && this.channel)
             this.channel.send({embed: createInfoEmbed(`Queue is empty! Add some songs!`)});
           
@@ -177,8 +180,10 @@ export class MediaPlayer {
                 if(!this.playing) {
                     type.getStream(item)
                         .then(stream => {
-                            this.dispatchStream(stream, item);
-                        });
+                           this.dispatchStream(stream, item); 
+                        }).then(()=>{
+                            this.determineStatus();
+                           });;
                 } else if(this.paused && this.dispatcher) {
                     this.dispatcher.resume();
                     this.paused = false;
@@ -272,17 +277,23 @@ export class MediaPlayer {
 
     determineStatus() {
         let item = this.queue.first;
-        if(item) {
-            if(this.playing) {
-                if(this.paused) {
-                    this.status.setBanner(`Paused: "${item.name}" Requested by: ${item.requestor}`);
-                } else {
-                    this.status.setBanner(`Now Playing: "${item.name}" Requested by: ${item.requestor}${this.queue.length > 1 ? `, Up Next "${this.queue[1].name}"`:''}`);
-                }
-            } else
+      
+        if(this.playing && this.queue.length>0){
+            this.status.setBanner(`Now Playing: "${item.name}" Requested by: ${item.requestor}${this.queue.length > 1 ? `, Up Next "${this.queue[1].name}"`:''}`);
+            if(this.paused){
+                this.status.setBanner(`Paused: "${item.name}" Requested by: ${item.requestor}`);    
+       
+            }else if(!this.playing && this.queue.length > 0){
                 this.status.setBanner(`Up Next: "${item.name}" Requested by: ${item.requestor}`);
-        } else
-            this.status.setBanner(`No Songs In Queue`);
-    }
+         
+         }
+          }if(this.queue.length<1){
+              this.status.setBanner(`No Songs In Queue`);
+          }
+
+          if(this.queue.length>0 && item.isLive){
+                this.status.setBanner(`Playing live stream Requested by : ${item.requestor}`);
+                }
+     }
 
 }
