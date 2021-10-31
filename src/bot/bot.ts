@@ -322,6 +322,20 @@ export class RhythmBot extends IBot<IRhythmBotConfig> {
                 }
             }
         })
+        //stackoverflow solution !
+        client.on('voiceStateUpdate', (oldState, newState) => {
+             
+            // if nobody left the channel in question, return.
+            if (oldState.channelID !==  oldState.guild.me.voice.channelID || newState.channel)
+              return;
+          
+            // otherwise, check how many people are in the channel now
+            if (oldState.channel.members.size <2) 
+              setTimeout(() => { // if 1 (you), wait five minutes
+                if (oldState.channel.members.size<2) // if there's still 1 member, 
+                   oldState.channel.leave(); // leave
+               }, 180000); // (3 min in ms)
+          });
     }
 
     onReady(client: Client): void {
@@ -341,6 +355,8 @@ export class RhythmBot extends IBot<IRhythmBotConfig> {
             }
         });
     }
+
+
 
     onRegisterConsoleCommands(map: CommandMap<(args: ParsedArgs, rl: Interface) => void>): void { }
     
