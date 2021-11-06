@@ -1,4 +1,5 @@
-import { IBotConfig } from 'discord-bot-quickstart';
+import { IBotConfig } from "discord-bot-quickstart";
+
 
 export interface IRhythmBotConfig extends IBotConfig {
     auto?: {

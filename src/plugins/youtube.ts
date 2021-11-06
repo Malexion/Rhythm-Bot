@@ -49,10 +49,9 @@ export default class YoutubePlugin extends IBotPlugin {
                         .catch(err => error(err));
                 }),
                 getStream: (item: MediaItem) => new Promise<Readable>((done, error) => {
-                   // let stream = ytdl(item.url, { filter: 'audioonly', quality: 'highestaudio', highWaterMark:1<<28, dlChunkSize:1<<12, liveBuffer: 4900 });
-                  let stream = ytdl(item.url, { quality: 'highestaudio', 
-                  filter: (item.isLive ? (format => format.isHLS === true) : (format => format.container === 'webm' && format.codecs === 'opus')),
-                   highWaterMark: 1<<10, liveBuffer: 4000, dlChunkSize: 1<<12 }); 
+                  let stream = ytdl(item.url, {  quality: 'highestaudio',
+                  filter: (item.isLive ? (  format => format.isHLS === true ) : (format => format.container === 'webm' && format.codecs === 'opus')),
+                   highWaterMark: 1<<28, liveBuffer: 4999, dlChunkSize: 1<<12 }); 
                   
                    if(stream)
                         done(stream);

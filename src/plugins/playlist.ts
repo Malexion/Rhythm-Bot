@@ -33,7 +33,7 @@ export default class PlaylistPlugin extends IBotPlugin {
             .filter(file => file.includes('.json'))
             .map((file, i) => `${i + 1}. ${file.replace('.json', '')}`);
 
-        msg.channel.send({embed: createInfoEmbed(`Playlists`, `${files.length == 0 ? 'No Playlists' : files.join('\n')}`)});
+        msg.channel.send({ embeds: [createInfoEmbed(`Playlists`, `${files.length == 0 ? 'No Playlists' : files.join('\n')}`)] });
     }
 
     load(cmd: SuccessfulParsedMessage<Message>, msg: Message) {
@@ -48,7 +48,7 @@ export default class PlaylistPlugin extends IBotPlugin {
                     this.bot.player.queue.push(...queue.list);
                 }
                 this.bot.player.determineStatus();
-                msg.channel.send({embed: createInfoEmbed('Loaded Playlist:',name)});
+              msg.channel.send({ embeds: [createInfoEmbed('Loaded Playlist:',name)] });
                msg.channel.send('test');
             }
         }
@@ -61,7 +61,7 @@ export default class PlaylistPlugin extends IBotPlugin {
             if(queue.list.length > 0) {
                 writeJson(queue, playlistDir, `${name}.json`);
             }
-            msg.channel.send({embed: createInfoEmbed('Saved Playlist', name)});
+            msg.channel.send({ embeds: [createInfoEmbed('Saved Playlist', name)] });
         }
     }
 
@@ -69,7 +69,7 @@ export default class PlaylistPlugin extends IBotPlugin {
         let name = cmd.arguments[1];
         if(name && fileExists(playlistDir, `${name}.json`)) {
             deleteFile(playlistDir, `${name}.json`);
-            msg.channel.send({embed: createInfoEmbed('Deleted Playlist',name)});
+            msg.channel.send({ embeds: [createInfoEmbed('Deleted Playlist',name)] });
         }
     }
 
