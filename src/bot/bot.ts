@@ -21,7 +21,7 @@ import {
   User,
 } from "discord-bot-quickstart";
 import * as yts from "yt-search";
-import { VoiceConnectionStatus } from "@discordjs/voice";
+import { AudioPlayerStatus, VoiceConnectionStatus } from "@discordjs/voice";
 
 const helptext = readFile("../helptext.txt");
 const random = (array) => {
@@ -111,10 +111,15 @@ export class RhythmBot extends IBot<IRhythmBotConfig> {
             VoiceConnectionStatus.Disconnected
           )
         )
+          // this.player.dispatcher.stop();
           this.player.connection.disconnect();
       })
       .on("desc", (cmd: SuccessfulParsedMessage<Message>, msg: Message) => {
-        if (this.player.playing && this.player.dispatcher) {
+        //if (this.player.playing && this.player.dispatcher) {
+        if (
+          this.player.dispatcher &&
+          this.player.dispatcher.state.status == AudioPlayerStatus.Playing
+        ) {
           msg.channel.send({
             embeds: [
               createInfoEmbed(
@@ -148,7 +153,14 @@ export class RhythmBot extends IBot<IRhythmBotConfig> {
                 requestor: msg.author.username,
               })
               .then(() => {
-                if (!this.player.playing) this.player.play();
+                if (
+                  this.player.dispatcher &&
+                  !(
+                    this.player.dispatcher.state.status ==
+                    AudioPlayerStatus.Playing
+                  )
+                )
+                  this.player.play();
               });
           } else if (
             cmd.body.length > 0 &&
@@ -175,7 +187,14 @@ export class RhythmBot extends IBot<IRhythmBotConfig> {
                         requestor: msg.author.username,
                       })
                       .then(() => {
-                        if (!this.player.playing) this.player.play();
+                        if (
+                          this.player.dispatcher &&
+                          !(
+                            this.player.dispatcher.state.status ==
+                            AudioPlayerStatus.Playing
+                          )
+                        )
+                          this.player.play();
                       });
                   });
                 });
@@ -189,7 +208,9 @@ export class RhythmBot extends IBot<IRhythmBotConfig> {
       })
       .on("time", (cmd: SuccessfulParsedMessage<Message>, msg: Message) => {
         let media = this.player.queue.first;
-        if (this.player.playing && this.player.dispatcher) {
+       // if (this.player.playing && this.player.dispatcher) {
+         if(this.player.dispatcher && ( this.player.dispatcher.state.status ==
+          AudioPlayerStatus.Playing) ){
           let elapsed = secondsToTimestamp(
             this.player.audioResource.playbackDuration / 1000
           );
@@ -264,7 +285,13 @@ export class RhythmBot extends IBot<IRhythmBotConfig> {
                       requestor: msg.author.username,
                     })
                     .then(() => {
-                      if (!this.player.playing) this.player.play();
+                      if (
+                        this.player.dispatcher &&
+                        !(
+                          this.player.dispatcher.state.status ==
+                          AudioPlayerStatus.Playing
+                        )
+                      )this.player.play();
                     });
                 } else {
                   this.player.addMedia({
@@ -443,9 +470,9 @@ export class RhythmBot extends IBot<IRhythmBotConfig> {
           // if 1 (you), wait five minutes
           if (oldState.channel.members.size < 2)
             // if there's still 1 member,
-
-            oldState.disconnect();
-        }, 180000); // (3 min in ms)
+            //  this.player.skip();
+            this.player.connection.disconnect();
+        }, 30000); // (3 min in ms)
     });
   }
 

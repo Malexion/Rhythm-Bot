@@ -28,9 +28,6 @@ import { Readable } from "stream";
 export class MediaPlayer {
   typeRegistry: Map<string, IMediaType> = new Map<string, IMediaType>();
   queue: MediaQueue = new MediaQueue();
-  playing: boolean = false;
-  paused: boolean = false;
-  stopping: boolean = false;
   config: IRhythmBotConfig;
   status: BotStatus;
   logger: Logger;
@@ -49,7 +46,11 @@ export class MediaPlayer {
     this.config = config;
     this.status = status;
     this.logger = logger;
-    this.dispatcher = createAudioPlayer();
+    this.dispatcher = createAudioPlayer({
+      behaviors: {
+        noSubscriber: NoSubscriberBehavior.Pause,
+      },
+    });
   }
 
   addMedia(item: MediaItem): Promise<void> {
@@ -77,6 +78,7 @@ export class MediaPlayer {
             .addField("Position:", `${this.queue.indexOf(item) + 1}`, true)
             .addField("Requested By", item.requestor, true);
           this.channel.send({ embeds: [embed] });
+          this.determineStatus();
         }
       })
       .catch((err) => {
@@ -85,6 +87,7 @@ export class MediaPlayer {
             embeds: [createErrorEmbed(`Error adding track: ${err}`)],
           });
       });
+     
   }
 
   at(idx: number) {
@@ -92,7 +95,12 @@ export class MediaPlayer {
   }
 
   remove(item: MediaItem) {
-    if (item == this.queue.first && (this.playing || this.paused)) this.stop();
+    if (
+      item == this.queue.first &&
+      (this.dispatcher.state.status == AudioPlayerStatus.Playing ||
+        this.dispatcher.state.status == AudioPlayerStatus.Paused)
+    )
+      this.stop();
     this.queue.dequeue(item);
     this.determineStatus();
     if (this.channel)
@@ -102,7 +110,9 @@ export class MediaPlayer {
   }
 
   clear() {
-    if (this.playing || this.paused) this.stop();
+    if ( (this.dispatcher.state.status == AudioPlayerStatus.Playing ||
+      this.dispatcher.state.status == AudioPlayerStatus.Paused)
+  ) this.stop();
     this.queue.clear();
     this.determineStatus();
     if (this.channel)
@@ -110,20 +120,18 @@ export class MediaPlayer {
   }
 
   dispatchStream(stream: Readable, item: MediaItem) {
+
     this.audioResource = createAudioResource(stream, {
       inlineVolume: true,
       inputType: StreamType.WebmOpus,
     });
 
-    if (this.dispatcher) {
+    /* if (this.dispatcher) {
       this.dispatcher.stop();
-      this.dispatcher = createAudioPlayer({
-        behaviors: {
-          noSubscriber: NoSubscriberBehavior.Pause,
-        },
-      });
+      this.dispatcher = createAudioPlayer();
       this.dispatcher.play(this.audioResource);
-    }
+    }*/
+    this.dispatcher.play(this.audioResource);
 
     this.dispatcher.on(AudioPlayerStatus.Buffering, async () => {
       if (this.channel) {
@@ -137,7 +145,7 @@ export class MediaPlayer {
     });
 
     this.dispatcher.on(AudioPlayerStatus.Playing, async () => {
-      this.playing = true;
+    //  this.playing = true;
       this.determineStatus();
       if (this.channel) {
         const embed = createEmbed()
@@ -152,7 +160,7 @@ export class MediaPlayer {
       }
     });
     this.dispatcher.on("debug", (info: string) => {
-       this.logger.debug(info);
+      //  this.logger.debug(info);
     });
     this.dispatcher.on("error", (err) => {
       this.skip();
@@ -164,19 +172,34 @@ export class MediaPlayer {
       process.exit(2);
     });
 
-    this.dispatcher.on(AudioPlayerStatus.Idle, () => {
-      this.logger.debug("Stream Finished");
-      if (this.dispatcher) {
-        this.playing = false;
-        if (!this.stopping) {
-          let track = this.queue.dequeue();
-          if (this.config.queue.repeat) this.queue.enqueue(track);
-          setTimeout(() => {
-            this.play();
-          }, 1000);
-        }
-        this.stopping = false;
+    this.dispatcher.on("stateChange", (oldState, newState) => {
+      if (
+        newState.status === AudioPlayerStatus.Idle &&
+        oldState.status !== AudioPlayerStatus.Idle
+      ) {
+        this.dispatcher.stop(true);
+        this.audioResource = null;
+        this.dispatcher = null;
+        let track = this.queue.dequeue();
+        this.play();
+     
+        if (this.config.queue.repeat) this.queue.enqueue(track);
+        setTimeout(() => {
+          this.play();
+        }, 1000);
+      } else if (newState.status === AudioPlayerStatus.Playing) {
+      
       }
+    });
+
+    this.connection.subscribe(this.dispatcher);
+
+    this.dispatcher.on(AudioPlayerStatus.Idle, async () => {
+      this.logger.debug("Stream Finished");
+      this.determineStatus();
+    });
+
+    this.dispatcher.on(AudioPlayerStatus.AutoPaused, () => {
       this.determineStatus();
     });
   }
@@ -187,7 +210,16 @@ export class MediaPlayer {
         embeds: [createInfoEmbed(`Queue is empty! Add some songs!`)],
       });
 
-    if (this.playing && !this.paused)
+    if (
+      this.dispatcher &&
+      this.dispatcher.state.status == AudioPlayerStatus.AutoPaused
+    )
+      this.dispatcher.unpause();
+
+    if (
+      this.dispatcher &&
+      this.dispatcher.state.status == AudioPlayerStatus.Playing
+    )
       this.channel.send({
         embeds: [createInfoEmbed(`Already playing a song!`)],
       });
@@ -196,6 +228,7 @@ export class MediaPlayer {
     if (item && this.connection) {
       let type = this.typeRegistry.get(item.type);
       if (type) {
+        this.dispatcher = createAudioPlayer();
         if (this.dispatcher.state.status == AudioPlayerStatus.Idle) {
           type
             .getStream(item)
@@ -203,16 +236,10 @@ export class MediaPlayer {
               this.dispatchStream(stream, item);
             })
             .then(() => {
-            /*  if (this.isPlaying == false) {
-                console.log("subscribe here ----->>.");*/
-                this.connection.subscribe(this.dispatcher); //here audioplayer not reusable ?????????????
-              /*  this.isPlaying = true;
-              }*/
               this.determineStatus();
             });
-        } else if (this.paused && this.dispatcher) {
+        } else if (this.dispatcher && this.dispatcher.state.status == AudioPlayerStatus.Paused) {
           this.dispatcher.unpause();
-          this.paused = false;
           this.determineStatus();
           if (this.channel)
             this.channel.send({
@@ -224,11 +251,8 @@ export class MediaPlayer {
   }
 
   stop() {
-    if (this.playing && this.dispatcher) {
+    if (this.dispatcher && this.dispatcher.state.status == AudioPlayerStatus.Playing) {
       let item = this.queue.first;
-      this.stopping = true;
-      this.paused = false;
-      this.playing = false;
       this.dispatcher.pause();
       this.dispatcher.stop(true);
       this.determineStatus();
@@ -240,10 +264,10 @@ export class MediaPlayer {
   }
 
   skip() {
-    if (this.playing && this.dispatcher) {
+     if (this.dispatcher && this.dispatcher.state.status == AudioPlayerStatus.Playing) {
       let item = this.queue.first;
-      this.paused = false;
-      this.dispatcher.pause();
+    
+      // this.dispatcher.pause();
       this.dispatcher.stop(true);
       if (this.channel)
         this.channel.send({
@@ -261,9 +285,8 @@ export class MediaPlayer {
   }
 
   pause() {
-    if (this.playing && !this.paused && this.dispatcher) {
+      if(this.dispatcher && this.dispatcher.state.status == AudioPlayerStatus.Playing){
       this.dispatcher.pause();
-      this.paused = true;
       this.determineStatus();
       if (this.channel)
         this.channel.send({
@@ -273,7 +296,9 @@ export class MediaPlayer {
   }
 
   shuffle() {
-    if (this.playing || this.paused) this.stop();
+    //if (this.playing || this.paused) this.stop();
+    if(this.dispatcher && (this.dispatcher.state.status == AudioPlayerStatus.Playing ||
+      this.dispatcher.state.status == AudioPlayerStatus.Paused || this.dispatcher.state.status == AudioPlayerStatus.AutoPaused)) this.stop();
     this.queue.shuffle();
     this.determineStatus();
     if (this.channel)
@@ -306,32 +331,46 @@ export class MediaPlayer {
 
   determineStatus() {
     let item = this.queue.first;
-    console.log(
-      `det sts ${this.queue.length} && state ${this.dispatcher.state.status}`
-    );
 
-    if (this.dispatcher.state.status == AudioPlayerStatus.Buffering) {
-      this.status.setBanner(`Buffering...`);
-    }
-    if (this.dispatcher.state.status == AudioPlayerStatus.Idle) {
-      if (this.queue.length < 1) this.status.setBanner(`No Songs In Queue`);
-    } else if (this.dispatcher.state.status == AudioPlayerStatus.Playing) {
-      this.status.setBanner(
-        `Now Playing: "${item.name}" Requested by: ${item.requestor}${
-          this.queue.length > 1 ? `, Up Next "${this.queue[1].name}"` : ""
-        }`
-      );
-      if (this.paused) {
+    if (this.dispatcher) {
+
+      if (this.dispatcher.state.status == AudioPlayerStatus.Buffering) {
+        this.status.setBanner(`Buffering...`);
+      }
+      if (this.dispatcher.state.status == AudioPlayerStatus.Idle) {
+        if (this.queue.length < 1) this.status.setBanner(`No Songs In Queue`);
+      } else if (this.dispatcher.state.status == AudioPlayerStatus.Playing) {
+        this.status.setBanner(
+          `Now Playing: "${item.name}" Requested by: ${item.requestor}${
+            this.queue.length > 1 ? `, Up Next "${this.queue[1].name}"` : ""
+          }`
+        );
+       
+      }
+      if (this.dispatcher.state.status == AudioPlayerStatus.Paused) {
         this.status.setBanner(
           `Paused: "${item.name}" Requested by: ${item.requestor}`
         );
       }
-    }
+      if (this.dispatcher.state.status == AudioPlayerStatus.AutoPaused) {
+        this.status.setBanner(`Auto Paused: "${item.name}"`);
+      }
+      if (
+        this.dispatcher.state.status == AudioPlayerStatus.Playing &&
+        this.queue.length > 1
+      ) {
+        this.status.setBanner(
+          `Now Playing: "${item.name}" Requested by: ${item.requestor}${
+            this.queue.length > 1 ? `, Up Next "${this.queue[1].name}"` : ""
+          }`
+        );
+      }
 
-    if (this.queue.length > 0 && item.isLive) {
-      this.status.setBanner(
-        `Playing ${item.name} stream Requested by : ${item.requestor}`
-      );
+      if (this.queue.length > 0 && item.isLive) {
+        this.status.setBanner(
+          `Playing ${item.name} stream Requested by : ${item.requestor}`
+        );
+      }
     }
   }
 }
