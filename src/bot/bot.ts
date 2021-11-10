@@ -135,7 +135,6 @@ export class RhythmBot extends IBot<IRhythmBotConfig> {
           if (!this.player.connection) {
             joinUserChannel(msg).then((conn) => {
               this.player.connection = conn;
-              console.log("user joined channel !!!");
               msg.channel.send({
                 embeds: [createInfoEmbed(`Joined Channel: ${msg.guild.name}`)],
               });
