@@ -65,7 +65,6 @@ export class MediaPlayer {
             item.description = media.description;
             item.isLive = media.isLive;
             this.queue.enqueue(item);
-            this.determineStatus();
             done(item);
           })
           .catch((err) => error(err));
@@ -79,8 +78,9 @@ export class MediaPlayer {
             .addField("Position:", `${this.queue.indexOf(item) + 1}`, true)
             .addField("Requested By", item.requestor, true);
           this.channel.send({ embeds: [embed] });
-          this.determineStatus();
+         
         }
+       //  this.determineStatus();//1
       })
       .catch((err) => {
         if (this.channel)
@@ -103,7 +103,6 @@ export class MediaPlayer {
     )
       this.stop();
     this.queue.dequeue(item);
-    this.determineStatus();
     if (this.channel)
       this.channel.send({
         embeds: [createInfoEmbed(`Track Removed: ${item.name}`)],
@@ -115,7 +114,6 @@ export class MediaPlayer {
       this.dispatcher.state.status == AudioPlayerStatus.Paused)
   ) this.stop();
     this.queue.clear();
-    this.determineStatus();
     if (this.channel)
       this.channel.send({ embeds: [createInfoEmbed(`Playlist Cleared!`)] });
   }
@@ -129,10 +127,13 @@ export class MediaPlayer {
 
      if (this.dispatcher) {
       this.dispatcher.stop();
-        this.dispatcher = createAudioPlayer();
-      this.dispatcher.play(this.audioResource);
+        this.dispatcher = createAudioPlayer({
+          behaviors: {
+            noSubscriber: NoSubscriberBehavior.Stop,
+          },
+        });
+ 
     }
-   // this.dispatcher.play(this.audioResource);
 
     this.dispatcher.on(AudioPlayerStatus.Buffering, async () => {
       if (this.channel) {
@@ -142,12 +143,9 @@ export class MediaPlayer {
           .addField("Requested By", `${item.requestor}`);
         const msg = await this.channel.send({ embeds: [embed] });
       }
-      this.determineStatus();
     });
 
-    this.dispatcher.on(AudioPlayerStatus.Playing, async () => {
-    //  this.playing = true;
-    this.determineStatus();
+    this.dispatcher.on(AudioPlayerStatus.Playing,  async () => {
       if (this.channel) {
         const embed = createEmbed()
           .setTitle("▶️ Now playing")
@@ -176,34 +174,32 @@ export class MediaPlayer {
     this.dispatcher.on("stateChange", (oldState, newState) => {
       if (
         newState.status === AudioPlayerStatus.Idle &&
-        oldState.status !== AudioPlayerStatus.Idle
+        oldState.status != AudioPlayerStatus.Idle
       ) {
         this.dispatcher.stop(true);
         this.audioResource = null;
-       // this.dispatcher = null;
         let track = this.queue.dequeue();
         //this.play();
-        this.determineStatus();
      
         if (this.config.queue.repeat) this.queue.enqueue(track);
         setTimeout(() => {
           this.play();
         }, 1000);
-      } else if (newState.status === AudioPlayerStatus.Playing) {
-      
       }
+      this.determineStatus();//main
     });
 
     this.connection.subscribe(this.dispatcher);
 
     this.dispatcher.on(AudioPlayerStatus.Idle, async () => {
       this.logger.debug("Stream Finished");
-      this.determineStatus();
+      //this.determineStatus();//2
     });
 
     this.dispatcher.on(AudioPlayerStatus.AutoPaused, () => {
-      this.determineStatus();
+      //     detsts
     });
+    
   }
 
    play() {
@@ -236,13 +232,10 @@ export class MediaPlayer {
             .getStream(item)
             .then((stream) => {
               this.dispatchStream(stream, item);
+              this.dispatcher.play(this.audioResource);  
             })
-            .then(() => {
-              this.determineStatus();
-            });
         } else if (this.dispatcher && this.dispatcher.state.status == AudioPlayerStatus.Paused) {
           this.dispatcher.unpause();
-          this.determineStatus();
           if (this.channel)
             this.channel.send({
               embeds: [createInfoEmbed(`⏯️ ${this.queue.first.name}resumed`)],
@@ -257,7 +250,6 @@ export class MediaPlayer {
       let item = this.queue.first;
       this.dispatcher.pause();
       this.dispatcher.stop(true);
-      this.determineStatus();
       if (this.channel)
         this.channel.send({
           embeds: [createInfoEmbed(`⏹️ ${item.name} stopped`)],
@@ -284,13 +276,11 @@ export class MediaPlayer {
           embeds: [createInfoEmbed(`⏭️ ${item.name} skipped`)],
         });
     }
-    this.determineStatus();
   }
 
   pause() {
       if(this.dispatcher && this.dispatcher.state.status == AudioPlayerStatus.Playing){
       this.dispatcher.pause();
-      this.determineStatus();
       if (this.channel)
         this.channel.send({
           embeds: [createInfoEmbed(`⏸️ ${this.queue.first.name} paused`)],
@@ -299,11 +289,9 @@ export class MediaPlayer {
   }
 
   shuffle() {
-    //if (this.playing || this.paused) this.stop();
     if(this.dispatcher && (this.dispatcher.state.status == AudioPlayerStatus.Playing ||
       this.dispatcher.state.status == AudioPlayerStatus.Paused || this.dispatcher.state.status == AudioPlayerStatus.AutoPaused)) this.stop();
     this.queue.shuffle();
-    this.determineStatus();
     if (this.channel)
       this.channel.send({ embeds: [createInfoEmbed(`🔀 Queue Shuffled`)] });
   }
@@ -316,7 +304,6 @@ export class MediaPlayer {
 
     if (currentIdx != targetIdx) {
       this.queue.move(currentIdx, targetIdx);
-      this.determineStatus();
     }
   }
 
@@ -334,7 +321,7 @@ export class MediaPlayer {
 
   determineStatus() {
     let item = this.queue.first;
-    console.log(`dis : ${this.dispatcher.state.status}`);
+    console.log(`${this.dispatcher.state.status}`);
     if (this.dispatcher) {
       if (this.dispatcher.state.status == AudioPlayerStatus.Buffering) {
         this.status.setBanner(`Buffering...`);
@@ -343,14 +330,6 @@ export class MediaPlayer {
         if (this.queue.length <= 0) this.status.setBanner(`No Songs In Queue`);
       } 
       
-    /*  if (this.dispatcher.state.status == AudioPlayerStatus.Playing) {
-        this.status.setBanner(
-          `Now Playing: "${item.name}" Requested by: ${item.requestor}${
-            this.queue.length > 1 ? `, Up Next "${this.queue[1].name}"` : ""
-          }`
-        );
-       
-      }*/
       if (this.dispatcher.state.status == AudioPlayerStatus.Paused) {
         this.status.setBanner(
           `Paused: "${item.name}" Requested by: ${item.requestor}`
@@ -373,7 +352,7 @@ export class MediaPlayer {
       ) {
         this.status.setBanner(
           `Now Playing: "${item.name}" Requested by: ${item.requestor}${
-            this.queue.length > 0 ? `, Up Next "${this.queue[1].name}"` : ""
+            this.queue.length > 1 ? `, Up Next "${this.queue[1].name}"` : ""
           }`
         );
       }
@@ -383,7 +362,15 @@ export class MediaPlayer {
           `Playing ${item.name} stream Requested by : ${item.requestor}`
         );
       }
+    }else{
+      if (this.queue.length > 0) {
+        this.status.setBanner(
+          `Playing? ${item.name} stream Requested by : ${item.requestor}`
+        );
+      }
     }
+  
+
   }
 }
 

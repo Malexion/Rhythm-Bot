@@ -11,8 +11,8 @@
   "license": "ISC",
   "dependencies": {
     "@discordjs/opus": "github:discordjs/opus",
-    "@discordjs/voice": "^0.7.2",
-    "@types/node": "^16.11.6",
+    "@discordjs/voice": "^0.7.3",
+    "@types/node": "^16.11.7",
     "bufferutil": "^4.0.5",
     "discord-bot-quickstart": "github:spectral369/Discord-Bot-Quickstart#v0.0.154",
     "discord-command-parser": "^1.5.3",

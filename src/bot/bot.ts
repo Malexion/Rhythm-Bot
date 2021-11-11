@@ -159,6 +159,7 @@ export class RhythmBot extends IBot<IRhythmBotConfig> {
                     AudioPlayerStatus.Playing
                   )
                 )
+                    console.log("player play with youtubelink");
                   this.player.play();
               });
           } else if (
@@ -231,6 +232,17 @@ export class RhythmBot extends IBot<IRhythmBotConfig> {
       .on(
         "search",
         async (cmd: SuccessfulParsedMessage<Message>, msg: Message) => {
+          new Promise<void>((done) => {
+            if (!this.player.connection) {
+              joinUserChannel(msg).then((conn) => {
+                this.player.connection = conn;
+                msg.channel.send({
+                  embeds: [createInfoEmbed(`Joined Channel: ${msg.guild.name}`)],
+                });
+                done();
+              });
+            } else done();
+          }).then(async ()=>{
           let noResults = false;
 
           if (cmd.body != null && cmd.body !== "") {
@@ -264,7 +276,9 @@ export class RhythmBot extends IBot<IRhythmBotConfig> {
                 createErrorEmbed(`No songs found OR No search string provided`),
               ],
             });
+            
           }
+        });
         }
       )
       .on(
@@ -454,7 +468,7 @@ export class RhythmBot extends IBot<IRhythmBotConfig> {
         }
       }
     );
-    //stackoverflow solution ! not needed in discordjs 13
+    //stackoverflow solution ! 
     client.on("voiceStateUpdate", (oldState, newState) => {
       // if nobody left the channel in question, return.
       if (
@@ -470,13 +484,14 @@ export class RhythmBot extends IBot<IRhythmBotConfig> {
           if (oldState.channel.members.size < 2)
             // if there's still 1 member,
             //  this.player.skip();
+            this.player.dispatcher.stop(true);
             this.player.connection.disconnect();
         }, 30000); // (3 min in ms)
     });
   }
 
   onReady(client: Client): void {
-    this.player.determineStatus();
+   
     console.log(`Guilds: ${this.client.guilds.cache.size}`);
     this.client.guilds.cache.forEach((guild) => {
       console.log(`\nGuild Name: ${guild.name}`);
@@ -497,6 +512,7 @@ export class RhythmBot extends IBot<IRhythmBotConfig> {
         console.log("Unable to manage messages on this guild");
       }
     });
+    this.status.setBanner(`No Songs In Queue`);
   }
 
   onRegisterConsoleCommands(
