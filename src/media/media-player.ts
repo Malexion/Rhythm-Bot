@@ -22,6 +22,7 @@ import {
   NoSubscriberBehavior,
   StreamType,
   VoiceConnection,
+  VoiceConnectionStatus,
 } from "@discordjs/voice";
 import { Readable } from "stream";
 
@@ -196,10 +197,8 @@ export class MediaPlayer {
       //this.determineStatus();//2
     });
 
-    this.dispatcher.on(AudioPlayerStatus.AutoPaused, () => {
-      //     detsts
-    });
-    
+
+
   }
 
    play() {

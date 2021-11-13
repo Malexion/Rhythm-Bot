@@ -96,7 +96,7 @@ export class RhythmBot extends IBot<IRhythmBotConfig> {
               embeds: [createInfoEmbed(`Joined Channel: ${msg.guild.name}`)],
             });
 
-            if (this.config.auto.play) this.player.play();
+          //  if (this.config.auto.play) this.player.play();
           })
           .catch((err) => {
             msg.channel.send({ embeds: [createErrorEmbed(err)] });
@@ -112,6 +112,10 @@ export class RhythmBot extends IBot<IRhythmBotConfig> {
           )
         )
           // this.player.dispatcher.stop();
+          this.player.clear();
+          this.player.dispatcher.stop(true);
+          if( !(this.player.connection.state.status ==
+            VoiceConnectionStatus.Disconnected))
           this.player.connection.disconnect();
       })
       .on("desc", (cmd: SuccessfulParsedMessage<Message>, msg: Message) => {
@@ -132,15 +136,16 @@ export class RhythmBot extends IBot<IRhythmBotConfig> {
       })
       .on("play", (cmd: SuccessfulParsedMessage<Message>, msg: Message) => {
         new Promise<void>((done) => {
-          if (!this.player.connection) {
+
+          // if(this.player.dispatcher){
             joinUserChannel(msg).then((conn) => {
               this.player.connection = conn;
-              msg.channel.send({
+             /* msg.channel.send({
                 embeds: [createInfoEmbed(`Joined Channel: ${msg.guild.name}`)],
-              });
+              });*/
               done();
             });
-          } else done();
+          /*}else*//* done();*/
         }).then(() => {
           if (
             cmd.body.match("^(http(s)://)?((w){3}.)?youtu(be|.be)?(.com)?/.+")
@@ -159,7 +164,6 @@ export class RhythmBot extends IBot<IRhythmBotConfig> {
                     AudioPlayerStatus.Playing
                   )
                 )
-                    console.log("player play with youtubelink");
                   this.player.play();
               });
           } else if (
@@ -485,7 +489,9 @@ export class RhythmBot extends IBot<IRhythmBotConfig> {
             // if there's still 1 member,
             //  this.player.skip();
             this.player.dispatcher.stop(true);
+            this.player.clear();
             this.player.connection.disconnect();
+            this.status.setBanner(`No Songs In Queue`);
         }, 30000); // (3 min in ms)
     });
   }
