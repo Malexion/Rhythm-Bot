@@ -22,6 +22,7 @@ import { MediaItem } from '../media/media-item.model';
 const helptext = readFile('../helptext.txt');
 const random = (array) => array[Math.floor(Math.random() * array.length)];
 const pingPhrases = [`Can't stop won't stop!`, `:ping_pong: Pong Bitch!`];
+const YOUTUBE_REGEX = /http(?:s?):\/\/(?:www\.)?youtu(?:be\.com\/watch\?v=|\.be\/)([\w\-\_]*)(&(amp;)?‌​[\w\?‌​=]*)?/;
 
 export class RhythmBot extends IBot<IRhythmBotConfig> {
     helptext: string;
@@ -118,6 +119,16 @@ export class RhythmBot extends IBot<IRhythmBotConfig> {
                 let noResults = false;
 
                 if (cmd.body != null && cmd.body !== '') {
+                    if (YOUTUBE_REGEX.test(cmd.body)) {
+                        await this.player.addMedia({
+                            type: 'youtube',
+                            url: cmd.body,
+                            requestor: msg.author.username
+                        });
+
+                        return;
+                    }
+
                     const videos = await yts({ query: cmd.body, pages: 1 }).then((res) => res.videos);
                     if (videos != null && videos.length > 0) {
                         await Promise.all(
