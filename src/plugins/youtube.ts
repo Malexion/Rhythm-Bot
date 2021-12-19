@@ -8,6 +8,8 @@ import * as ytpl from 'ytpl';
 
 const youtubeType: string = 'youtube';
 
+const cookie : string = 'LOGI_INFO=AFmmF2swRAIgLw7aQC5MpW5f-J3k9J38ul2jhpPHjZlneUbTZ5thhooCIFbQCu84vKalHaf4FMtBGUj9CxRrmBb18CJ4xLIC8ywi:QUQ3MjNmeDhxUXp3MkRPZVdsbEhsWkZsTHVoWGtXa1JZNVRYb3JqV2dwck9wcERhTmFFVFhBLXp5SDh0NWR0N1BLTGFseFhrZ3hwNGd6ZURqcG9WYTN2OUpFZXlpYTdLUHB6Q0NmaER3VVFmaDh0c1JfODEtWURXYUphRjFYYUJJdExvRmcyZFNPc1JBZ0JTcXpzU3ozTzVvcGJ2SC1vSGtn; HSID=Aa3qWcushVQ9benXP; SID=FAgGb1ZvwAfBSg6OehJeTzpwIzLO4Mw-3SiTL4LSm7WZ3VpGUPwMuKS55xgKIsYTxdyseQ.; SSID=A7Gq7xRk2VK-BRLdh';
+
 export default class YoutubePlugin extends IBotPlugin {
     bot: RhythmBot;
 
@@ -49,7 +51,9 @@ export default class YoutubePlugin extends IBotPlugin {
                         .catch(err => error(err));
                 }),
                 getStream: (item: MediaItem) => new Promise<Readable>((done, error) => {
-                  let stream = ytdl(item.url, {  quality: 'highestaudio',
+                  let stream = ytdl(item.url, {  quality: 'highestaudio', requestOptions:{ headers: {
+                    Cookie:cookie
+                }},
                   filter: (item.isLive ? (  format => format.isHLS === true ) : (format => format.container === 'webm' && format.codecs === 'opus')),
                    highWaterMark: 1<<28, liveBuffer: 4999, dlChunkSize: 1<<12 }); 
                   

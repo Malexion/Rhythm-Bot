@@ -157,6 +157,7 @@ export class MediaPlayer {
         msg.react(this.config.emojis.playSong);
         msg.react(this.config.emojis.pauseSong);
         msg.react(this.config.emojis.skipSong);
+        this.determineStatus();
       }
     });
     this.dispatcher.on("debug", (info: string) => {
@@ -231,7 +232,8 @@ export class MediaPlayer {
             .getStream(item)
             .then((stream) => {
               this.dispatchStream(stream, item);
-              this.dispatcher.play(this.audioResource);  
+              this.dispatcher.play(this.audioResource);
+             
             })
         } else if (this.dispatcher && this.dispatcher.state.status == AudioPlayerStatus.Paused) {
           this.dispatcher.unpause();
