@@ -3,12 +3,13 @@ import { BotStatus } from "../bot/bot-status";
 import { MediaQueue } from "./media-queue";
 import { MediaItem } from "./media-item.model";
 import { IMediaType } from "./media-type.model";
+import * as child_process from "child_process";
 import { createEmbed, createErrorEmbed, createInfoEmbed } from "../helpers";
 import {
   Logger,
   TextChannel,
   DMChannel,
-  NewsChannel /*, VoiceConnection, StreamDispatcher */,
+  NewsChannel,
   PartialDMChannel,
   ThreadChannel,
 } from "discord-bot-quickstart";
@@ -22,7 +23,6 @@ import {
   NoSubscriberBehavior,
   StreamType,
   VoiceConnection,
-  VoiceConnectionStatus,
 } from "@discordjs/voice";
 import { Readable } from "stream";
 
@@ -32,6 +32,7 @@ export class MediaPlayer {
   config: IRhythmBotConfig;
   status: BotStatus;
   logger: Logger;
+  isRadio: Boolean = false;
   channel:
     | PartialDMChannel
     | DMChannel
@@ -79,9 +80,8 @@ export class MediaPlayer {
             .addField("Position:", `${this.queue.indexOf(item) + 1}`, true)
             .addField("Requested By", item.requestor, true);
           this.channel.send({ embeds: [embed] });
-         
         }
-       //  this.determineStatus();//1
+        //  this.determineStatus();//1
       })
       .catch((err) => {
         if (this.channel)
@@ -89,7 +89,6 @@ export class MediaPlayer {
             embeds: [createErrorEmbed(`Error adding track: ${err}`)],
           });
       });
-     
   }
 
   at(idx: number) {
@@ -111,29 +110,31 @@ export class MediaPlayer {
   }
 
   clear() {
-    if ( (this.dispatcher.state.status == AudioPlayerStatus.Playing ||
-      this.dispatcher.state.status == AudioPlayerStatus.Paused)
-  ) this.stop();
+    if (
+      this.dispatcher.state.status == AudioPlayerStatus.Playing ||
+      this.dispatcher.state.status == AudioPlayerStatus.Paused
+    )
+      this.stop();
     this.queue.clear();
+    this.status.setBanner(`No Songs In Queue`);
     if (this.channel)
       this.channel.send({ embeds: [createInfoEmbed(`Playlist Cleared!`)] });
   }
 
   dispatchStream(stream: Readable, item: MediaItem) {
-
     this.audioResource = createAudioResource(stream, {
       inlineVolume: true,
-      inputType: StreamType.WebmOpus,
+      //   inputType: StreamType.WebmOpus,
+      inputType: StreamType.Arbitrary,
     });
 
-     if (this.dispatcher) {
+    if (this.dispatcher) {
       this.dispatcher.stop();
-        this.dispatcher = createAudioPlayer({
-          behaviors: {
-            noSubscriber: NoSubscriberBehavior.Stop,
-          },
-        });
- 
+      this.dispatcher = createAudioPlayer({
+        behaviors: {
+          noSubscriber: NoSubscriberBehavior.Stop,
+        },
+      });
     }
 
     this.dispatcher.on(AudioPlayerStatus.Buffering, async () => {
@@ -146,7 +147,7 @@ export class MediaPlayer {
       }
     });
 
-    this.dispatcher.on(AudioPlayerStatus.Playing,  async () => {
+    this.dispatcher.on(AudioPlayerStatus.Playing, async () => {
       if (this.channel) {
         const embed = createEmbed()
           .setTitle("▶️ Now playing")
@@ -182,13 +183,13 @@ export class MediaPlayer {
         this.audioResource = null;
         let track = this.queue.dequeue();
         //this.play();
-     
+
         if (this.config.queue.repeat) this.queue.enqueue(track);
         setTimeout(() => {
           this.play();
         }, 1000);
       }
-      this.determineStatus();//main
+      this.determineStatus(); //main
     });
 
     this.connection.subscribe(this.dispatcher);
@@ -197,12 +198,9 @@ export class MediaPlayer {
       this.logger.debug("Stream Finished");
       //this.determineStatus();//2
     });
-
-
-
   }
 
-   play() {
+  play() {
     if (this.queue.length == 0 && this.channel)
       this.channel.send({
         embeds: [createInfoEmbed(`Queue is empty! Add some songs!`)],
@@ -228,14 +226,14 @@ export class MediaPlayer {
       if (type) {
         //this.dispatcher = createAudioPlayer();
         if (this.dispatcher.state.status == AudioPlayerStatus.Idle) {
-          type
-            .getStream(item)
-            .then((stream) => {
-              this.dispatchStream(stream, item);
-              this.dispatcher.play(this.audioResource);
-             
-            })
-        } else if (this.dispatcher && this.dispatcher.state.status == AudioPlayerStatus.Paused) {
+          type.getStream(item).then((stream) => {
+            this.dispatchStream(stream, item);
+            this.dispatcher.play(this.audioResource);
+          });
+        } else if (
+          this.dispatcher &&
+          this.dispatcher.state.status == AudioPlayerStatus.Paused
+        ) {
           this.dispatcher.unpause();
           if (this.channel)
             this.channel.send({
@@ -246,8 +244,65 @@ export class MediaPlayer {
     }
   }
 
+  playRadioVirgin() {
+    if (
+      this.dispatcher &&
+      this.dispatcher.state.status == AudioPlayerStatus.Playing
+    )
+      this.channel.send({
+        embeds: [createInfoEmbed(`Already playing a song!`)],
+      });
+    if (this.dispatcher.state.status == AudioPlayerStatus.Idle) {
+      const ffmpeg = child_process.spawn("ffmpeg", [
+        "-analyzeduration",
+        "0",
+        "-loglevel",
+        "0",
+        "-i",
+        "http://astreaming.virginradio.ro:8000/virgin_aacp_64k",
+        "-f",
+        "adts",
+        "pipe:1",
+      ]);
+
+      this.dispatcher.play(createAudioResource(ffmpeg.stdout));
+      this.connection.subscribe(this.dispatcher);
+      this.isRadio = true;
+    }
+  }
+
+  playRadioZU() {
+    if (
+      this.dispatcher &&
+      this.dispatcher.state.status == AudioPlayerStatus.Playing
+    )
+      this.channel.send({
+        embeds: [createInfoEmbed(`Already playing a song!`)],
+      });
+    if (this.dispatcher.state.status == AudioPlayerStatus.Idle) {
+      const ffmpeg = child_process.spawn("ffmpeg", [
+        "-analyzeduration",
+        "0",
+        "-loglevel",
+        "0",
+        "-i",
+        "http://live4ro.antenaplay.ro//radiozu/radiozu-48000.m3u8",
+        "-f",
+        "opus",
+        "pipe:1",
+      ]);
+
+      this.dispatcher.play(createAudioResource(ffmpeg.stdout));
+      this.connection.subscribe(this.dispatcher);
+      this.isRadio = true;
+    }
+  }
+
   stop() {
-    if (this.dispatcher && this.dispatcher.state.status == AudioPlayerStatus.Playing) {
+    if (
+      this.dispatcher &&
+      this.dispatcher.state.status == AudioPlayerStatus.Playing
+    ) {
       let item = this.queue.first;
       this.dispatcher.pause();
       this.dispatcher.stop(true);
@@ -259,28 +314,39 @@ export class MediaPlayer {
   }
 
   skip() {
-     if (this.dispatcher && this.dispatcher.state.status == AudioPlayerStatus.Playing) {
-      let item = this.queue.first;
-    
-      // this.dispatcher.pause();
-      
+    if (this.isRadio == true) {
+      this.isRadio = false;
       this.dispatcher.stop(true);
-      if (this.channel)
-        this.channel.send({
-          embeds: [createInfoEmbed(`⏭️ ${item.name} skipped`)],
-        });
-    } else if (this.queue.length > 0) {
-      let item = this.queue.first;
-      this.queue.dequeue();
-      if (this.channel)
-        this.channel.send({
-          embeds: [createInfoEmbed(`⏭️ ${item.name} skipped`)],
-        });
+    } else {
+      if (
+        this.dispatcher &&
+        this.dispatcher.state.status == AudioPlayerStatus.Playing
+      ) {
+        let item = this.queue.first;
+
+        // this.dispatcher.pause();
+
+        this.dispatcher.stop(true);
+        if (this.channel)
+          this.channel.send({
+            embeds: [createInfoEmbed(`⏭️ ${item.name} skipped`)],
+          });
+      } else if (this.queue.length > 0) {
+        let item = this.queue.first;
+        this.queue.dequeue();
+        if (this.channel)
+          this.channel.send({
+            embeds: [createInfoEmbed(`⏭️ ${item.name} skipped`)],
+          });
+      }
     }
   }
 
   pause() {
-      if(this.dispatcher && this.dispatcher.state.status == AudioPlayerStatus.Playing){
+    if (
+      this.dispatcher &&
+      this.dispatcher.state.status == AudioPlayerStatus.Playing
+    ) {
       this.dispatcher.pause();
       if (this.channel)
         this.channel.send({
@@ -290,8 +356,13 @@ export class MediaPlayer {
   }
 
   shuffle() {
-    if(this.dispatcher && (this.dispatcher.state.status == AudioPlayerStatus.Playing ||
-      this.dispatcher.state.status == AudioPlayerStatus.Paused || this.dispatcher.state.status == AudioPlayerStatus.AutoPaused)) this.stop();
+    if (
+      this.dispatcher &&
+      (this.dispatcher.state.status == AudioPlayerStatus.Playing ||
+        this.dispatcher.state.status == AudioPlayerStatus.Paused ||
+        this.dispatcher.state.status == AudioPlayerStatus.AutoPaused)
+    )
+      this.stop();
     this.queue.shuffle();
     if (this.channel)
       this.channel.send({ embeds: [createInfoEmbed(`🔀 Queue Shuffled`)] });
@@ -323,14 +394,14 @@ export class MediaPlayer {
   determineStatus() {
     let item = this.queue.first;
     console.log(`${this.dispatcher.state.status}`);
-    if (this.dispatcher) {
+    if (this.dispatcher && this.isRadio == false) {
       if (this.dispatcher.state.status == AudioPlayerStatus.Buffering) {
         this.status.setBanner(`Buffering...`);
       }
       if (this.dispatcher.state.status == AudioPlayerStatus.Idle) {
         if (this.queue.length <= 0) this.status.setBanner(`No Songs In Queue`);
-      } 
-      
+      }
+
       if (this.dispatcher.state.status == AudioPlayerStatus.Paused) {
         this.status.setBanner(
           `Paused: "${item.name}" Requested by: ${item.requestor}`
@@ -342,15 +413,13 @@ export class MediaPlayer {
       if (
         this.dispatcher.state.status == AudioPlayerStatus.Idle &&
         this.queue.length > 0
-      ){
+      ) {
         this.status.setBanner(
-          `Playing Next: "${item.name}" Requested by: ${item.requestor}`);
-
+          `Playing Next: "${item.name}" Requested by: ${item.requestor}`
+        );
       }
 
-      if (
-        this.dispatcher.state.status == AudioPlayerStatus.Playing
-      ) {
+      if (this.dispatcher.state.status == AudioPlayerStatus.Playing) {
         this.status.setBanner(
           `Now Playing: "${item.name}" Requested by: ${item.requestor}${
             this.queue.length > 1 ? `, Up Next "${this.queue[1].name}"` : ""
@@ -363,15 +432,14 @@ export class MediaPlayer {
           `Playing ${item.name} stream Requested by : ${item.requestor}`
         );
       }
-    }else{
+    } else {
       if (this.queue.length > 0) {
         this.status.setBanner(
           `Playing? ${item.name} stream Requested by : ${item.requestor}`
         );
       }
+      if (this.isRadio) this.status.setBanner(`Playing Radio`);
     }
-  
-
   }
 }
 

@@ -96,12 +96,44 @@ export class RhythmBot extends IBot<IRhythmBotConfig> {
               embeds: [createInfoEmbed(`Joined Channel: ${msg.guild.name}`)],
             });
 
-          //  if (this.config.auto.play) this.player.play();
+            //  if (this.config.auto.play) this.player.play();
           })
           .catch((err) => {
             msg.channel.send({ embeds: [createErrorEmbed(err)] });
           });
       })
+      .on("radiozu", (cmd: SuccessfulParsedMessage<Message>, msg: Message) => {
+        joinUserChannel(msg)
+          .then((connection) => {
+            this.player.connection = connection;
+            msg.channel.send({
+              embeds: [createInfoEmbed(`Joined Channel: ${msg.guild.name}`)],
+            });
+            this.player.playRadioZU();
+          })
+          .catch((err) => {
+            console.log(err);
+            msg.channel.send({ embeds: [createErrorEmbed("Mik, error")] });
+          });
+      })
+      .on(
+        "radiovirgin",
+        (cmd: SuccessfulParsedMessage<Message>, msg: Message) => {
+          joinUserChannel(msg)
+            .then((connection) => {
+              this.player.connection = connection;
+              msg.channel.send({
+                embeds: [createInfoEmbed(`Joined Channel: ${msg.guild.name}`)],
+              });
+              this.player.playRadioVirgin();
+            })
+            .catch((err) => {
+              console.log(err);
+              msg.channel.send({ embeds: [createErrorEmbed("Mik, error")] });
+            });
+        }
+      )
+
       .on("leave", (cmd: SuccessfulParsedMessage<Message>, msg: Message) => {
         //todo if voice is in a voice channel
         if (
@@ -113,9 +145,13 @@ export class RhythmBot extends IBot<IRhythmBotConfig> {
         )
           // this.player.dispatcher.stop();
           this.player.clear();
-          this.player.dispatcher.stop(true);
-          if( !(this.player.connection.state.status ==
-            VoiceConnectionStatus.Disconnected))
+        this.player.dispatcher.stop(true);
+        if (
+          !(
+            this.player.connection.state.status ==
+            VoiceConnectionStatus.Disconnected
+          )
+        )
           this.player.connection.disconnect();
       })
       .on("desc", (cmd: SuccessfulParsedMessage<Message>, msg: Message) => {
@@ -136,16 +172,15 @@ export class RhythmBot extends IBot<IRhythmBotConfig> {
       })
       .on("play", (cmd: SuccessfulParsedMessage<Message>, msg: Message) => {
         new Promise<void>((done) => {
-
           // if(this.player.dispatcher){
-            joinUserChannel(msg).then((conn) => {
-              this.player.connection = conn;
-             /* msg.channel.send({
+          joinUserChannel(msg).then((conn) => {
+            this.player.connection = conn;
+            /* msg.channel.send({
                 embeds: [createInfoEmbed(`Joined Channel: ${msg.guild.name}`)],
               });*/
-              done();
-            });
-          /*}else*//* done();*/
+            done();
+          }); /* done();*/
+          /*}else*/
         }).then(() => {
           if (
             cmd.body.match("^(http(s)://)?((w){3}.)?youtu(be|.be)?(.com)?/.+")
@@ -212,9 +247,11 @@ export class RhythmBot extends IBot<IRhythmBotConfig> {
       })
       .on("time", (cmd: SuccessfulParsedMessage<Message>, msg: Message) => {
         let media = this.player.queue.first;
-       // if (this.player.playing && this.player.dispatcher) {
-         if(this.player.dispatcher && ( this.player.dispatcher.state.status ==
-          AudioPlayerStatus.Playing) ){
+        // if (this.player.playing && this.player.dispatcher) {
+        if (
+          this.player.dispatcher &&
+          this.player.dispatcher.state.status == AudioPlayerStatus.Playing
+        ) {
           let elapsed = secondsToTimestamp(
             this.player.audioResource.playbackDuration / 1000
           );
@@ -241,48 +278,51 @@ export class RhythmBot extends IBot<IRhythmBotConfig> {
               joinUserChannel(msg).then((conn) => {
                 this.player.connection = conn;
                 msg.channel.send({
-                  embeds: [createInfoEmbed(`Joined Channel: ${msg.guild.name}`)],
+                  embeds: [
+                    createInfoEmbed(`Joined Channel: ${msg.guild.name}`),
+                  ],
                 });
                 done();
               });
             } else done();
-          }).then(async ()=>{
-          let noResults = false;
+          }).then(async () => {
+            let noResults = false;
 
-          if (cmd.body != null && cmd.body !== "") {
-            const videos = await yts({ query: cmd.body, pages: 1 }).then(
-              (res) => res.videos
-            );
-            if (videos != null && videos.length > 0) {
-              await Promise.all(
-                videos.slice(0, 3).map((video) => {
-                  const embed = createEmbed()
-                    .setTitle(`${video.title}`)
-                    .addField("Author:", `${video.author.name}`, true)
-                    .addField("Duration", `${video.timestamp}`, true)
-                    .setThumbnail(video.image)
-                    .setURL(video.url);
-                  msg.channel
-                    .send({ embeds: [embed] })
-                    .then((m) => m.react(this.config.emojis.addSong));
-                })
+            if (cmd.body != null && cmd.body !== "") {
+              const videos = await yts({ query: cmd.body, pages: 1 }).then(
+                (res) => res.videos
               );
+              if (videos != null && videos.length > 0) {
+                await Promise.all(
+                  videos.slice(0, 3).map((video) => {
+                    const embed = createEmbed()
+                      .setTitle(`${video.title}`)
+                      .addField("Author:", `${video.author.name}`, true)
+                      .addField("Duration", `${video.timestamp}`, true)
+                      .setThumbnail(video.image)
+                      .setURL(video.url);
+                    msg.channel
+                      .send({ embeds: [embed] })
+                      .then((m) => m.react(this.config.emojis.addSong));
+                  })
+                );
+              } else {
+                noResults = true;
+              }
             } else {
               noResults = true;
             }
-          } else {
-            noResults = true;
-          }
 
-          if (noResults) {
-            msg.channel.send({
-              embeds: [
-                createErrorEmbed(`No songs found OR No search string provided`),
-              ],
-            });
-            
-          }
-        });
+            if (noResults) {
+              msg.channel.send({
+                embeds: [
+                  createErrorEmbed(
+                    `No songs found OR No search string provided`
+                  ),
+                ],
+              });
+            }
+          });
         }
       )
       .on(
@@ -308,7 +348,8 @@ export class RhythmBot extends IBot<IRhythmBotConfig> {
                           this.player.dispatcher.state.status ==
                           AudioPlayerStatus.Playing
                         )
-                      )this.player.play();
+                      )
+                        this.player.play();
                     });
                 } else {
                   this.player.addMedia({
@@ -472,7 +513,7 @@ export class RhythmBot extends IBot<IRhythmBotConfig> {
         }
       }
     );
-    //stackoverflow solution ! 
+    //stackoverflow solution !
     client.on("voiceStateUpdate", (oldState, newState) => {
       // if nobody left the channel in question, return.
       if (
@@ -489,15 +530,14 @@ export class RhythmBot extends IBot<IRhythmBotConfig> {
             // if there's still 1 member,
             //  this.player.skip();
             this.player.dispatcher.stop(true);
-            this.player.clear();
-            this.player.connection.disconnect();
-            this.status.setBanner(`No Songs In Queue`);
+          this.player.clear();
+          this.player.connection.disconnect();
+          this.status.setBanner(`No Songs In Queue`);
         }, 30000); // (3 min in ms)
     });
   }
 
   onReady(client: Client): void {
-   
     console.log(`Guilds: ${this.client.guilds.cache.size}`);
     this.client.guilds.cache.forEach((guild) => {
       console.log(`\nGuild Name: ${guild.name}`);
