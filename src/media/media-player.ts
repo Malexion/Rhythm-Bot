@@ -25,6 +25,7 @@ import {
   VoiceConnection,
 } from "@discordjs/voice";
 import { Readable } from "stream";
+import { MEDIA_ITEM_TYPE } from "./media-type";
 
 export class MediaPlayer {
   typeRegistry: Map<string, IMediaType> = new Map<string, IMediaType>();
@@ -58,7 +59,7 @@ export class MediaPlayer {
   addMedia(item: MediaItem): Promise<void> {
     return new Promise((done, error) => {
       let type = this.typeRegistry.get(item.type);
-      if (type) {
+      if (type && item.type == MEDIA_ITEM_TYPE.YOUTUBE) {
         type
           .getDetails(item)
           .then((media) => {
@@ -70,6 +71,13 @@ export class MediaPlayer {
             done(item);
           })
           .catch((err) => error(err));
+      } else if (item.type == MEDIA_ITEM_TYPE.RADIO) {
+        item.name = item.url;
+        item.duration = "Live";
+        item.isLive = true;
+        item.description = "Live Radio Stream !";
+        this.queue.enqueue(item);
+        done(item);
       } else error("Unknown Media Type!");
     })
       .then((item: MediaItem) => {
@@ -81,7 +89,6 @@ export class MediaPlayer {
             .addField("Requested By", item.requestor, true);
           this.channel.send({ embeds: [embed] });
         }
-        //  this.determineStatus();//1
       })
       .catch((err) => {
         if (this.channel)
@@ -122,11 +129,12 @@ export class MediaPlayer {
   }
 
   dispatchStream(stream: Readable, item: MediaItem) {
-    this.audioResource = createAudioResource(stream, {
-      inlineVolume: true,
-      //   inputType: StreamType.WebmOpus,
-      inputType: StreamType.Arbitrary,
-    });
+    if (item.type == MEDIA_ITEM_TYPE.YOUTUBE)
+      this.audioResource = createAudioResource(stream, {
+        inlineVolume: true,
+        //   inputType: StreamType.WebmOpus,
+        inputType: StreamType.WebmOpus,
+      });
 
     if (this.dispatcher) {
       this.dispatcher.stop();
@@ -158,7 +166,7 @@ export class MediaPlayer {
         msg.react(this.config.emojis.playSong);
         msg.react(this.config.emojis.pauseSong);
         msg.react(this.config.emojis.skipSong);
-        this.determineStatus();
+        this.determineStatus(); 
       }
     });
     this.dispatcher.on("debug", (info: string) => {
@@ -223,8 +231,7 @@ export class MediaPlayer {
     let item = this.queue.first;
     if (item && this.connection) {
       let type = this.typeRegistry.get(item.type);
-      if (type) {
-        //this.dispatcher = createAudioPlayer();
+      if (type && item.type == MEDIA_ITEM_TYPE.YOUTUBE) {
         if (this.dispatcher.state.status == AudioPlayerStatus.Idle) {
           type.getStream(item).then((stream) => {
             this.dispatchStream(stream, item);
@@ -239,6 +246,40 @@ export class MediaPlayer {
             this.channel.send({
               embeds: [createInfoEmbed(`⏯️ ${this.queue.first.name}resumed`)],
             });
+        }
+      } else if (item.type == MEDIA_ITEM_TYPE.RADIO) {
+        if (item.name.includes("ZU")) {
+          const ffmpeg = child_process.spawn("ffmpeg", [
+            "-analyzeduration",
+            "0",
+            "-loglevel",
+            "0",
+            "-i",
+            "http://live4ro.antenaplay.ro//radiozu/radiozu-48000.m3u8",
+            "-f",
+            "opus",
+            "pipe:1",
+          ]);
+
+          this.dispatchStream(ffmpeg.stdout, item);
+          this.dispatcher.play(createAudioResource(ffmpeg.stdout));
+          this.isRadio = true;
+        } else if (item.name.includes("Virgin")) {
+          const ffmpeg = child_process.spawn("ffmpeg", [
+            "-analyzeduration",
+            "0",
+            "-loglevel",
+            "0",
+            "-i",
+            "http://astreaming.virginradio.ro:8000/virgin_aacp_64k",
+            "-f",
+            "adts",
+            "pipe:1",
+          ]);
+          this.dispatchStream(ffmpeg.stdout, item);
+          this.dispatcher.play(createAudioResource(ffmpeg.stdout));
+          //  this.dispatcher.play(createAudioResource(ffmpeg.stdout));
+          this.isRadio = true;
         }
       }
     }
@@ -266,7 +307,7 @@ export class MediaPlayer {
       ]);
 
       this.dispatcher.play(createAudioResource(ffmpeg.stdout));
-      this.connection.subscribe(this.dispatcher);
+      //   this.connection.subscribe(this.dispatcher);
       this.isRadio = true;
     }
   }
@@ -293,7 +334,7 @@ export class MediaPlayer {
       ]);
 
       this.dispatcher.play(createAudioResource(ffmpeg.stdout));
-      this.connection.subscribe(this.dispatcher);
+      // this.connection.subscribe(this.dispatcher);
       this.isRadio = true;
     }
   }
@@ -340,6 +381,7 @@ export class MediaPlayer {
           });
       }
     }
+    this.determineStatus();
   }
 
   pause() {
@@ -438,7 +480,10 @@ export class MediaPlayer {
           `Playing? ${item.name} stream Requested by : ${item.requestor}`
         );
       }
-      if (this.isRadio) this.status.setBanner(`Playing Radio`);
+      if (this.isRadio) {
+        if (this.dispatcher.state.status == AudioPlayerStatus.Playing)
+          this.status.setBanner(`Playing ${item.name}`);
+      }
     }
   }
 }

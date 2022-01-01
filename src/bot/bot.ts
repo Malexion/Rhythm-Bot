@@ -22,6 +22,7 @@ import {
 } from "discord-bot-quickstart";
 import * as yts from "yt-search";
 import { AudioPlayerStatus, VoiceConnectionStatus } from "@discordjs/voice";
+import { MEDIA_ITEM_TYPE } from "../media/media-type";
 
 const helptext = readFile("../helptext.txt");
 const random = (array) => {
@@ -96,7 +97,6 @@ export class RhythmBot extends IBot<IRhythmBotConfig> {
               embeds: [createInfoEmbed(`Joined Channel: ${msg.guild.name}`)],
             });
 
-            //  if (this.config.auto.play) this.player.play();
           })
           .catch((err) => {
             msg.channel.send({ embeds: [createErrorEmbed(err)] });
@@ -109,7 +109,23 @@ export class RhythmBot extends IBot<IRhythmBotConfig> {
             msg.channel.send({
               embeds: [createInfoEmbed(`Joined Channel: ${msg.guild.name}`)],
             });
-            this.player.playRadioZU();
+
+            this.player
+              .addMedia({
+                type: MEDIA_ITEM_TYPE.RADIO,
+                url: "Radio ZU",
+                requestor: msg.author.username,
+              })
+              .then(() => {
+                if (
+                  this.player.dispatcher &&
+                  !(
+                    this.player.dispatcher.state.status ==
+                    AudioPlayerStatus.Playing
+                  )
+                )
+                  this.player.play();
+              });
           })
           .catch((err) => {
             console.log(err);
@@ -125,7 +141,22 @@ export class RhythmBot extends IBot<IRhythmBotConfig> {
               msg.channel.send({
                 embeds: [createInfoEmbed(`Joined Channel: ${msg.guild.name}`)],
               });
-              this.player.playRadioVirgin();
+              this.player
+                .addMedia({
+                  type: MEDIA_ITEM_TYPE.RADIO,
+                  url: "Virgin Radio Romania",
+                  requestor: msg.author.username,
+                })
+                .then(() => {
+                  if (
+                    this.player.dispatcher &&
+                    !(
+                      this.player.dispatcher.state.status ==
+                      AudioPlayerStatus.Playing
+                    )
+                  )
+                    this.player.play();
+                });
             })
             .catch((err) => {
               console.log(err);
@@ -135,7 +166,6 @@ export class RhythmBot extends IBot<IRhythmBotConfig> {
       )
 
       .on("leave", (cmd: SuccessfulParsedMessage<Message>, msg: Message) => {
-        //todo if voice is in a voice channel
         if (
           this.player.connection &&
           !(
@@ -143,7 +173,7 @@ export class RhythmBot extends IBot<IRhythmBotConfig> {
             VoiceConnectionStatus.Disconnected
           )
         )
-          // this.player.dispatcher.stop();
+           this.player.dispatcher.stop();
           this.player.clear();
         this.player.dispatcher.stop(true);
         if (
@@ -187,7 +217,7 @@ export class RhythmBot extends IBot<IRhythmBotConfig> {
           ) {
             this.player
               .addMedia({
-                type: "youtube",
+                type: MEDIA_ITEM_TYPE.YOUTUBE,
                 url: cmd.body,
                 requestor: msg.author.username,
               })
@@ -221,7 +251,7 @@ export class RhythmBot extends IBot<IRhythmBotConfig> {
                   msg.channel.send({ embeds: [embed] }).then(() => {
                     this.player
                       .addMedia({
-                        type: "youtube",
+                        type: MEDIA_ITEM_TYPE.YOUTUBE,
                         url: v.url,
                         requestor: msg.author.username,
                       })
@@ -247,7 +277,6 @@ export class RhythmBot extends IBot<IRhythmBotConfig> {
       })
       .on("time", (cmd: SuccessfulParsedMessage<Message>, msg: Message) => {
         let media = this.player.queue.first;
-        // if (this.player.playing && this.player.dispatcher) {
         if (
           this.player.dispatcher &&
           this.player.dispatcher.state.status == AudioPlayerStatus.Playing
@@ -337,7 +366,7 @@ export class RhythmBot extends IBot<IRhythmBotConfig> {
                 if (items.length <= 1) {
                   this.player
                     .addMedia({
-                      type: "youtube",
+                      type: MEDIA_ITEM_TYPE.YOUTUBE,
                       url: arg,
                       requestor: msg.author.username,
                     })
@@ -353,7 +382,7 @@ export class RhythmBot extends IBot<IRhythmBotConfig> {
                     });
                 } else {
                   this.player.addMedia({
-                    type: "youtube",
+                    type: MEDIA_ITEM_TYPE.YOUTUBE,
                     url: arg,
                     requestor: msg.author.username,
                   });
@@ -486,7 +515,7 @@ export class RhythmBot extends IBot<IRhythmBotConfig> {
               ) {
                 this.logger.debug(`Emoji Click: Adding Media: ${embed.url}`);
                 this.player.addMedia({
-                  type: "youtube",
+                  type: MEDIA_ITEM_TYPE.YOUTUBE,
                   url: embed.url,
                   requestor: user.username,
                 });

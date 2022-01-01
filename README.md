@@ -1,12 +1,15 @@
-# Rhythm-Bot 2.1.5 Search / Rich Text / Buttons!
-- New search command anything after !search will be searched against youtube and return the top 3 results
+# Rhythm-Bot 3.0.0 Search / Rich Text / Buttons!
+- Improved !search, !play commands !
 - Press the thumbs up reaction emoji to add the item to your queue
     - Note that you will want to give the bot permission to remove emojis in the text channel, this is the MANAGE_MESSAGES permission
-- Node version has updated from 10.x.x to 12.x.x due to discord.js update
+- Node version has  been updated to 16.x.x
 - New npm packages to install
-- Replaced dependence on manually installing ffmpeg
-    - Now ffmpeg is installed via npm with ffmpeg-static when you do a simple npm install
+- Reversed from ffmpeg-static npm package to manually compiled and configurated ffmpeg (because it just works better for me)
+    - ./configure --enable-nonfree --enable-opus --enable-libfdk-aac --enable-gpl
 - In addition to the reaction button interaction on the search command you can now use buttons for the new playing control
+- Can play live Youtube video !
+- __!help will display command list__ 
+
 
 ![Image](https://imgur.com/B2xLVgU.png)
 
@@ -20,12 +23,12 @@ Simple little music bot to queue up and play youtube audio over discord voice ch
 
 - `Python2.7` This version is required for node-gyp I think?
 - `node-gyp` command line tool
-- `node.js` version 12.X.X or higher is required
+- `node.js` version 16.X.X or higher is required
 - `typescript` types for javascript, enables easier group collaboration and simple right click to look up definitions
 
 ## Installation
 
-- Install node latest stable release, this was built with node v12.16.1
+- Install node latest stable release, this was built with node v16.13.1
 - For windows run `npm install --global --production --add-python-to-path windows-build-tools`
     - Run `npm install node-gyp -g`
     - Run `npm install typescript -g`
@@ -42,3 +45,8 @@ Simple little music bot to queue up and play youtube audio over discord voice ch
 ## Running the Application
 
 - Run `npm start`
+
+## Limitations
+- It cannot play ex-live videos
+- It cannot play age restricted videos
+- On very rare ocasions playing video is skipped
