@@ -173,8 +173,8 @@ export class RhythmBot extends IBot<IRhythmBotConfig> {
             VoiceConnectionStatus.Disconnected
           )
         )
-           this.player.dispatcher.stop();
-          this.player.clear();
+          this.player.dispatcher.stop();
+        this.player.clear();
         this.player.dispatcher.stop(true);
         if (
           !(
@@ -413,8 +413,7 @@ export class RhythmBot extends IBot<IRhythmBotConfig> {
       .on("list", (cmd: SuccessfulParsedMessage<Message>, msg: Message) => {
         let items = this.player.queue.map(
           (item, idx) =>
-            `${idx + 1}. Type: "${item.type}", Title: "${item.name}${
-              item.requestor ? `", Requested By: ${item.requestor}` : ""
+            `${idx + 1}. Type: "${item.type}", Title: "${item.name}${item.requestor ? `", Requested By: ${item.requestor}` : ""
             }"`
         );
         if (items.length > 0)
@@ -434,9 +433,9 @@ export class RhythmBot extends IBot<IRhythmBotConfig> {
       .on("move", (cmd: SuccessfulParsedMessage<Message>, msg: Message) => {
         if (cmd.arguments.length > 1) {
           let current = Math.min(
-              Math.max(parseInt(cmd.arguments[0]), 0),
-              this.player.queue.length - 1
-            ),
+            Math.max(parseInt(cmd.arguments[0]), 0),
+            this.player.queue.length - 1
+          ),
             targetDesc = cmd.arguments[0],
             target = 0;
           if (targetDesc == "up") target = Math.min(current - 1, 0);
@@ -592,5 +591,5 @@ export class RhythmBot extends IBot<IRhythmBotConfig> {
 
   onRegisterConsoleCommands(
     map: CommandMap<(args: ParsedArgs, rl: Interface) => void>
-  ): void {}
+  ): void { }
 }

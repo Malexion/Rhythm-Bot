@@ -1,5 +1,5 @@
 
-import { joinVoiceChannel, VoiceConnection, VoiceConnectionStatus } from '@discordjs/voice';
+import { joinVoiceChannel, VoiceConnection } from '@discordjs/voice';
 import {  Message, MessageEmbed } from 'discord.js';
 
 import * as moment from 'moment';
