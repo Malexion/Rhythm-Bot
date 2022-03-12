@@ -10,7 +10,7 @@
   "author": "Malexion, spectral369",
   "license": "ISC",
   "dependencies": {
-    "@discordjs/opus": "github:discordjs/opus",
+    "@discordjs/opus": "^0.7.0",
     "@discordjs/voice": "^0.8.0",
     "@types/node": "^17.0.21",
     "bufferutil": "^4.0.6",
@@ -27,8 +27,8 @@
     "utf-8-validate": "^5.0.8",
     "winston": "^3.6.0",
     "yt-search": "^2.10.3",
-    "ytdl-core": "^4.10.1",
-    "ytpl": "^2.2.3",
+    "ytdl-core": "^4.11.0",
+    "ytpl": "^2.3.0",
     "zlib-sync": "^0.1.7"
   }
 }
