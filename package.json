@@ -15,7 +15,7 @@
         "url": "https://github.com/Malexion/Rhythm-Bot"
     },
     "dependencies": {
-        "@discordjs/opus": "^0.6.0",
+        "@discordjs/opus": "^0.8.0",
         "@mikro-orm/core": "^4.5.9",
         "@mikro-orm/migrations": "^4.5.9",
         "@mikro-orm/sqlite": "^4.5.9",
